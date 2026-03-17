@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 
 export default function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -45,6 +46,16 @@ export default function Header() {
           </button>
 
           <div className="flex items-center gap-3">
+            <Link
+              href="/auth/login"
+              className={`rounded-full px-4 py-2 text-sm font-semibold transition-all duration-200 hover:scale-105 md:px-5 md:py-2.5 md:text-base ${
+                isScrolled
+                  ? "bg-brand-dark/10 text-brand-dark hover:bg-brand-dark/20"
+                  : "bg-white/20 text-white hover:bg-white/30"
+              }`}
+            >
+              Área do Cliente
+            </Link>
             <button
               onClick={() => scrollToSection("contato")}
               className="rounded-full bg-brand-red px-5 py-2.5 text-sm font-semibold text-white transition-all duration-200 hover:scale-105 hover:shadow-lg hover:bg-brand-red/90 md:px-6 md:py-3 md:text-base"
