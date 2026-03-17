@@ -14,8 +14,8 @@ export default function SetupAdminPage() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "x-admin-secret": secret,
         },
+        body: JSON.stringify({ secret }),
       });
 
       const data = await response.json();
