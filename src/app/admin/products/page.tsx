@@ -273,91 +273,111 @@ export default async function AdminProductsPage({
               products.map((product) => (
                 <article
                   key={product.id}
-                  className="rounded-xl border border-brand-dark/10 bg-brand-light/40 p-4"
+                  className="group overflow-hidden rounded-xl border border-brand-dark/10 bg-white shadow-sm transition-all hover:shadow-md"
                 >
-                  <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                    <div>
-                      <p className="text-xs uppercase tracking-wide text-brand-dark/60">ID #{product.id}</p>
-                      <h3 className="mt-1 text-lg font-semibold text-brand-dark">{product.nome}</h3>
-                      <p className="mt-1 inline-flex rounded-full bg-brand-yellow/30 px-2 py-0.5 text-xs font-medium text-brand-dark">
-                        {product.categoria}
-                      </p>
-                      <Image src={product.image_url} alt={product.nome} className="mt-2 w-full max-w-xs rounded-lg border border-brand-dark/20" />
+                  <div className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center">
+                    <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-lg border border-brand-dark/10 bg-brand-light shadow-inner sm:h-28 sm:w-28">
+                      <Image 
+                        src={product.image_url} 
+                        alt={product.nome} 
+                        fill
+                        className="object-cover"
+                      />
                     </div>
 
-                    <form action={deleteProductAction}>
-                      <input type="hidden" name="id" value={product.id} />
-                      <SubmitButton
-                        label="Excluir"
-                        pendingLabel="Excluindo..."
-                        className="rounded-lg border border-red-300 px-3 py-2 text-sm font-semibold text-red-700 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-60"
-                      />
-                    </form>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2">
+                        <h3 className="text-xl font-bold text-brand-dark">{product.nome}</h3>
+                        <span className="rounded bg-brand-dark/5 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-brand-dark/50">
+                          ID #{product.id}
+                        </span>
+                      </div>
+                      <p className="mt-1.5 inline-flex items-center rounded-md bg-brand-yellow/20 px-2.5 py-1 text-xs font-semibold text-brand-dark/80 border border-brand-yellow/30">
+                        {product.categoria}
+                      </p>
+                      <p className="mt-2 text-sm leading-relaxed text-brand-dark/70 line-clamp-2">
+                        {product.descricao}
+                      </p>
+                    </div>
+
+                    <div className="flex w-full items-center gap-2 sm:w-auto sm:flex-col sm:items-stretch">
+                      <form action={deleteProductAction} className="w-full sm:w-auto">
+                        <input type="hidden" name="id" value={product.id} />
+                        <SubmitButton
+                          label="Excluir produto"
+                          pendingLabel="Excluindo..."
+                          className="w-full rounded-lg border border-red-200 bg-red-50 px-4 py-2 text-sm font-semibold text-red-600 transition hover:bg-red-100 hover:text-red-700 disabled:cursor-not-allowed disabled:opacity-60"
+                        />
+                      </form>
+                    </div>
                   </div>
 
-                  <details className="mt-4 rounded-lg border border-brand-dark/10 bg-white">
-                    <summary className="cursor-pointer px-4 py-2 text-sm font-semibold text-brand-dark">
-                      Editar produto
+                  <details className="group/edit border-t border-brand-dark/5 bg-brand-light/30">
+                    <summary className="flex cursor-pointer list-none items-center justify-center gap-2 px-4 py-3 text-sm font-semibold text-brand-dark/60 transition hover:bg-brand-dark/5 hover:text-brand-dark focus:outline-none">
+                      <span className="group-open/edit:hidden">Editar Produto ▼</span>
+                      <span className="hidden group-open/edit:inline">Fechar Edição ▲</span>
                     </summary>
-                    <form action={updateProductAction} className="grid gap-3 border-t border-brand-dark/10 p-4">
-                      <input type="hidden" name="id" value={product.id} />
+                    <div className="border-t border-brand-dark/5 p-5 bg-white">
+                      <form action={updateProductAction} className="grid gap-4">
+                        <input type="hidden" name="id" value={product.id} />
 
-                      <div className="grid gap-3 md:grid-cols-2">
+                        <div className="grid gap-4 md:grid-cols-2">
+                          <div>
+                            <label className="mb-1.5 block text-sm font-medium text-brand-dark">Nome</label>
+                            <input
+                              name="nome"
+                              defaultValue={product.nome}
+                              minLength={2}
+                              maxLength={120}
+                              required
+                              className="w-full rounded-lg border border-brand-dark/20 bg-brand-light/20 px-3 py-2.5 text-sm text-brand-dark outline-none transition focus:border-brand-red focus:bg-white focus:ring-2 focus:ring-brand-red/20"
+                            />
+                          </div>
+                          <div>
+                            <label className="mb-1.5 block text-sm font-medium text-brand-dark">Categoria</label>
+                            <input
+                              name="categoria"
+                              defaultValue={product.categoria}
+                              minLength={2}
+                              maxLength={80}
+                              required
+                              className="w-full rounded-lg border border-brand-dark/20 bg-brand-light/20 px-3 py-2.5 text-sm text-brand-dark outline-none transition focus:border-brand-red focus:bg-white focus:ring-2 focus:ring-brand-red/20"
+                            />
+                          </div>
+                        </div>
+
                         <div>
-                          <label className="mb-1 block text-sm text-brand-dark">Nome</label>
+                          <label className="mb-1.5 block text-sm font-medium text-brand-dark">URL da imagem</label>
                           <input
-                            name="nome"
-                            defaultValue={product.nome}
-                            minLength={2}
-                            maxLength={120}
+                            name="image_url"
+                            defaultValue={product.image_url}
                             required
-                            className="w-full rounded-lg border border-brand-dark/20 px-3 py-2 text-sm text-brand-dark outline-none transition focus:border-brand-red focus:ring-2 focus:ring-brand-red/20"
+                            className="w-full rounded-lg border border-brand-dark/20 bg-brand-light/20 px-3 py-2.5 text-sm text-brand-dark outline-none transition focus:border-brand-red focus:bg-white focus:ring-2 focus:ring-brand-red/20"
                           />
                         </div>
+
                         <div>
-                          <label className="mb-1 block text-sm text-brand-dark">Categoria</label>
-                          <input
-                            name="categoria"
-                            defaultValue={product.categoria}
-                            minLength={2}
-                            maxLength={80}
+                          <label className="mb-1.5 block text-sm font-medium text-brand-dark">Descrição</label>
+                          <textarea
+                            name="descricao"
+                            defaultValue={product.descricao}
+                            minLength={5}
+                            maxLength={2000}
                             required
-                            className="w-full rounded-lg border border-brand-dark/20 px-3 py-2 text-sm text-brand-dark outline-none transition focus:border-brand-red focus:ring-2 focus:ring-brand-red/20"
+                            rows={3}
+                            className="w-full resize-y rounded-lg border border-brand-dark/20 bg-brand-light/20 px-3 py-2.5 text-sm text-brand-dark outline-none transition focus:border-brand-red focus:bg-white focus:ring-2 focus:ring-brand-red/20"
                           />
                         </div>
-                      </div>
 
-                      <div>
-                        <label className="mb-1 block text-sm text-brand-dark">URL da imagem</label>
-                        <input
-                          name="image_url"
-                          defaultValue={product.image_url}
-                          required
-                          className="w-full rounded-lg border border-brand-dark/20 px-3 py-2 text-sm text-brand-dark outline-none transition focus:border-brand-red focus:ring-2 focus:ring-brand-red/20"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="mb-1 block text-sm text-brand-dark">Descricao</label>
-                        <textarea
-                          name="descricao"
-                          defaultValue={product.descricao}
-                          minLength={5}
-                          maxLength={2000}
-                          required
-                          rows={3}
-                          className="w-full resize-y rounded-lg border border-brand-dark/20 px-3 py-2 text-sm text-brand-dark outline-none transition focus:border-brand-red focus:ring-2 focus:ring-brand-red/20"
-                        />
-                      </div>
-
-                      <div className="flex justify-end">
-                        <SubmitButton
-                          label="Salvar alteracoes"
-                          pendingLabel="Salvando..."
-                          className="rounded-lg bg-brand-orange px-4 py-2 text-sm font-semibold text-white transition hover:bg-brand-orange/90 disabled:cursor-not-allowed disabled:opacity-60"
-                        />
-                      </div>
-                    </form>
+                        <div className="mt-2 flex justify-end">
+                          <SubmitButton
+                            label="Salvar alterações"
+                            pendingLabel="Salvando..."
+                            className="rounded-lg bg-brand-orange px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-orange/90 shadow-sm disabled:cursor-not-allowed disabled:opacity-60"
+                          />
+                        </div>
+                      </form>
+                    </div>
                   </details>
                 </article>
               ))
