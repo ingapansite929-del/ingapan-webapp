@@ -277,7 +277,7 @@ export default function CadastroPage() {
             Junte-se a nós!
           </h1>
           <p className="text-white/80 text-lg text-center max-w-md">
-            Cadastre sua empresa e tenha acesso aos melhores produtos alimentícios com entrega garantida.
+            Cadastre sua empresa e tenha acesso aos melhores produtos alimentícios.
           </p>
           <div className="mt-8 flex flex-col gap-4 text-white/90">
             <div className="flex items-center gap-3">
@@ -287,22 +287,6 @@ export default function CadastroPage() {
                 </svg>
               </div>
               <span>Catálogo completo de produtos</span>
-            </div>
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-brand-yellow/20 rounded-full flex items-center justify-center">
-                <svg className="w-4 h-4 text-brand-yellow" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                </svg>
-              </div>
-              <span>Preços exclusivos para clientes</span>
-            </div>
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-brand-yellow/20 rounded-full flex items-center justify-center">
-                <svg className="w-4 h-4 text-brand-yellow" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                </svg>
-              </div>
-              <span>Acompanhamento de pedidos</span>
             </div>
           </div>
         </div>
