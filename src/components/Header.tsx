@@ -47,6 +47,16 @@ export default function Header() {
 
           <div className="flex items-center gap-3">
             <Link
+              href="/produtos"
+              className={`rounded-full px-4 py-2 text-sm font-semibold transition-all duration-200 hover:scale-105 md:px-5 md:py-2.5 md:text-base ${
+                isScrolled
+                  ? "bg-brand-yellow/10 text-brand-dark hover:bg-brand-yellow/20"
+                  : "bg-white/20 text-white hover:bg-white/30"
+              }`}
+            >
+              Produtos
+            </Link>
+            <Link
               href="/auth/login"
               className={`rounded-full px-4 py-2 text-sm font-semibold transition-all duration-200 hover:scale-105 md:px-5 md:py-2.5 md:text-base ${
                 isScrolled
