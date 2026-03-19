@@ -134,7 +134,7 @@ export default function LoginPage() {
                 disabled={loading}
                 className="w-full bg-brand-red text-white font-semibold py-3 px-4 rounded-lg hover:bg-brand-red/90 transition-all duration-200 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {loading ? "Entrando..." : "Entrar"}
+                {loading ? "Carregando..." : "Entrar"}
               </button>
             </form>
 
