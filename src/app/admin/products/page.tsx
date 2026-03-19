@@ -1,9 +1,9 @@
 import Link from "next/link";
 import SubmitButton from "@/components/admin/SubmitButton";
+import CategorySelector from "@/components/admin/CategorySelector";
 import { requireAdminAccess } from "@/lib/auth/admin";
 import {
   createProductAction,
-  createProductCategoryAction,
   deleteProductAction,
   updateProductAction,
 } from "@/app/admin/products/actions";
@@ -225,47 +225,9 @@ export default async function AdminProductsPage({
 
             <div className="space-y-2 text-brand-dark transition-colors">
               <label htmlFor="id_categoria" className="text-sm font-bold uppercase tracking-wide">Categoria</label>
-              <div className="flex gap-2">
-                <select
-                  id="id_categoria"
-                  name="id_categoria"
-                  required
-                  defaultValue=""
-                  disabled={categories.length === 0}
-                  className="w-full rounded-xl border-2 border-brand-dark/10 bg-brand-light/20 px-4 py-3 text-sm text-brand-dark outline-none transition-all hover:border-brand-dark/30 focus:border-brand-red focus:bg-white focus:shadow-[0_0_0_4px_rgba(239,68,68,0.1)] disabled:cursor-not-allowed disabled:opacity-60"
-                >
-                  <option value="" disabled>
-                    {categories.length === 0
-                      ? "Crie uma categoria para continuar"
-                      : "Selecione uma categoria"}
-                  </option>
-                  {categories.map((category) => (
-                    <option key={category.id} value={category.id}>
-                      {category.category}
-                    </option>
-                  ))}
-                </select>
-                <div className="flex w-[210px] gap-2">
-                  <input
-                    name="category"
-                    type="text"
-                    minLength={2}
-                    maxLength={80}
-                    className="min-w-0 flex-1 rounded-xl border-2 border-brand-dark/10 bg-white px-3 py-3 text-sm text-brand-dark outline-none transition-all placeholder:text-brand-dark/30 hover:border-brand-dark/30 focus:border-brand-red focus:shadow-[0_0_0_4px_rgba(239,68,68,0.1)]"
-                    placeholder="Nova categoria"
-                  />
-                  <button
-                    type="submit"
-                    formAction={createProductCategoryAction}
-                    formNoValidate
-                    className="rounded-xl bg-brand-dark px-3 py-3 text-xs font-bold uppercase tracking-wide text-white transition-all hover:bg-brand-dark/90 focus:outline-none focus:ring-4 focus:ring-brand-dark/20 disabled:pointer-events-none disabled:opacity-70"
-                  >
-                    Criar
-                  </button>
-                </div>
-              </div>
+              <CategorySelector initialCategories={categories} />
               <p className="text-xs text-brand-dark/50">
-                Se não encontrar uma categoria, crie ao lado e salve o produto em seguida.
+                Se não encontrar uma categoria, clique no botão + para criar uma nova.
               </p>
             </div>
 
@@ -308,17 +270,17 @@ export default async function AdminProductsPage({
           <div className="flex flex-col gap-6 rounded-[2rem] border border-brand-dark/5 bg-white p-6 shadow-sm sm:p-8">
             
             {/* Nav Listagem + Filtros */}
-            <div className="flex flex-col gap-5 border-b border-brand-dark/5 pb-6 xl:flex-row xl:items-end xl:justify-between">
+            <div className="flex flex-col gap-5 border-b border-brand-dark/5 pb-6 xl:flex-row xl:flex-wrap xl:items-end xl:justify-between">
               <div>
                 <h2 className="text-2xl font-bold text-brand-dark font-heading">Itens em Catálogo</h2>
                 <div className="mt-1.5 flex items-center gap-2 text-sm font-medium text-brand-dark/50">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-                  <span>Página {page} navegando até {PAGE_SIZE} resultados.</span>
+                  <span>Página {page} até {PAGE_SIZE} resultados.</span>
                 </div>
               </div>
 
               <form method="get" className="flex w-full flex-col gap-3 sm:flex-row sm:items-center xl:w-auto">
-                <div className="relative flex-1 xl:w-56">
+                <div className="relative flex-1 xl:w-48">
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="absolute left-3.5 top-1/2 -translate-y-1/2 text-brand-dark/30"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
                   <input
                     name="nome"
@@ -327,7 +289,7 @@ export default async function AdminProductsPage({
                     className="w-full rounded-xl border-2 border-brand-dark/5 bg-brand-light/30 py-2.5 pl-10 pr-4 text-sm font-semibold text-brand-dark outline-none transition-all placeholder:font-medium placeholder:text-brand-dark/40 hover:bg-brand-light/60 focus:border-brand-dark/20 focus:bg-white focus:shadow-[0_0_0_4px_rgba(0,0,0,0.03)]"
                   />
                 </div>
-                <div className="relative flex-1 xl:w-56">
+                <div className="relative flex-1 xl:w-48">
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="absolute left-3.5 top-1/2 -translate-y-1/2 text-brand-dark/30"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
                   <select
                     name="categoria_id"
@@ -344,7 +306,7 @@ export default async function AdminProductsPage({
                 </div>
                 <button
                   type="submit"
-                  className="rounded-xl bg-brand-dark px-6 py-3.5 text-sm font-bold text-white shadow-sm transition-all hover:bg-brand-dark/90 active:scale-95 sm:py-3"
+                  className="w-full rounded-xl border-2 border-transparent bg-brand-dark px-8 py-2.5 text-sm font-bold text-white shadow-sm transition-all hover:bg-brand-dark/90 active:scale-95 sm:w-auto"
                 >
                   Filtrar
                 </button>

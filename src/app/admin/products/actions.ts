@@ -234,3 +234,34 @@ export async function createProductCategoryAction(formData: FormData) {
   revalidatePath(ADMIN_PRODUCTS_PATH);
   redirectWithStatus("category_created");
 }
+
+export async function createCategoryJsonAction(categoryName: string) {
+  const { supabase } = await requireAdminAccess({
+    forbiddenRedirectPath:
+      "/admin/products?error=" +
+      encodeURIComponent("Acesso negado ao painel admin."),
+  });
+
+  const category = categoryName.trim();
+  const categoryError = validateLength("Categoria", category, 2, 80);
+  if (categoryError) {
+    return { success: false, error: categoryError };
+  }
+
+  const { data, error: insertError } = await supabase
+    .from("product_categoria")
+    .insert({ category })
+    .select("id, category")
+    .single();
+
+  if (insertError?.code === "23505") {
+    return { success: false, error: "Essa categoria já existe." };
+  }
+
+  if (insertError || !data) {
+    return { success: false, error: "Não foi possível criar a categoria." };
+  }
+
+  revalidatePath(ADMIN_PRODUCTS_PATH);
+  return { success: true, category: data };
+}
