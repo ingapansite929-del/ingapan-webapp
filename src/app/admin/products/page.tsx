@@ -109,55 +109,82 @@ export default async function AdminProductsPage({
   const previousPageUrl = buildListUrl(Math.max(page - 1, 1), nome, categoria);
 
   return (
-    <section className="space-y-6">
-      <header className="rounded-2xl bg-gradient-to-r from-brand-red to-brand-orange p-6 text-white shadow-lg">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+    <section className="mx-auto flex max-w-[1400px] flex-col gap-8 pb-12 px-4 sm:px-6 lg:px-8">
+      {/* Cabeçalho Premium */}
+      <header className="relative overflow-hidden rounded-[2rem] bg-brand-dark px-6 py-10 shadow-xl sm:px-10 sm:py-12">
+        {/* Decorative elements */}
+        <div className="pointer-events-none absolute -right-20 -top-20 h-[300px] w-[300px] rounded-full bg-brand-red/20 blur-[80px]"></div>
+        <div className="pointer-events-none absolute -bottom-20 -left-20 h-[300px] w-[300px] rounded-full bg-brand-orange/20 blur-[80px]"></div>
+        
+        <div className="relative z-10 flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <p className="text-xs uppercase tracking-[0.25em] text-white/80">Gestao de Catalogo</p>
-            <h1 className="mt-2 text-3xl font-bold font-heading">Produtos</h1>
-            <p className="mt-2 text-sm text-white/90">
-              Cadastre, edite e exclua produtos.
+            <div className="mb-4 flex items-center gap-3">
+              <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/10 backdrop-blur-sm sm:h-12 sm:w-12">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-brand-orange sm:h-6 sm:w-6"><path d="M20 16V7a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v9m16 0H4m16 0 1.28 2.55a1 1 0 0 1-.9 1.45H3.62a1 1 0 0 1-.9-1.45L4 16"/></svg>
+              </span>
+              <span className="rounded-md bg-brand-orange/10 px-2.5 py-1 text-xs font-bold uppercase tracking-widest text-brand-orange">
+                Gestão de Catálogo
+              </span>
+            </div>
+            <h1 className="text-3xl font-bold text-white font-heading sm:text-4xl">
+              Central de Produtos
+            </h1>
+            <p className="mt-3 max-w-xl text-sm leading-relaxed text-white/70 sm:text-base">
+              Cadastre novos itens, reestruture categorias e mantenha o seu inventário esteticamente organizado com máxima facilidade.
             </p>
           </div>
           <Link
             href="/dashboard"
-            className="inline-flex w-fit items-center rounded-lg bg-white/15 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-white/25"
+            className="group flex w-fit items-center gap-2 rounded-xl bg-white/10 px-5 py-3 text-sm font-semibold text-white backdrop-blur-md transition-all hover:bg-white/20 hover:shadow-lg sm:px-6"
           >
-            Voltar ao dashboard
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="transition-transform group-hover:-translate-x-1"><path d="m15 18-6-6 6-6"/></svg>
+            Voltar ao Painel
           </Link>
         </div>
       </header>
 
-      {statusMessage && (
-        <div className="rounded-xl border border-green-300 bg-green-50 px-4 py-3 text-sm text-green-800">
-          {statusMessage}
-        </div>
-      )}
+      {/* Alertas Modernos */}
+      <div className="flex flex-col gap-3">
+        {statusMessage && (
+          <div className="flex w-full animate-in fade-in slide-in-from-top-2 items-center gap-3 rounded-2xl border border-green-200 bg-green-50 px-5 py-4 text-green-800 shadow-sm">
+            <svg className="h-5 w-5 shrink-0 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+            <p className="text-sm font-bold">{statusMessage}</p>
+          </div>
+        )}
 
-      {errorMessage && (
-        <div className="rounded-xl border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-800">
-          {errorMessage}
-        </div>
-      )}
+        {errorMessage && (
+          <div className="flex w-full animate-in fade-in slide-in-from-top-2 items-center gap-3 rounded-2xl border border-red-200 bg-red-50 px-5 py-4 text-red-800 shadow-sm">
+            <svg className="h-5 w-5 shrink-0 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+            <p className="text-sm font-bold">{errorMessage}</p>
+          </div>
+        )}
 
-      {error && (
-        <div className="rounded-xl border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-800">
-          Erro ao carregar produtos. Verifique RLS e permissao da tabela products.
-        </div>
-      )}
+        {error && (
+          <div className="flex w-full animate-in fade-in slide-in-from-top-2 items-center gap-3 rounded-2xl border border-red-200 bg-red-50 px-5 py-4 text-red-800 shadow-sm">
+            <svg className="h-5 w-5 shrink-0 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+            <p className="text-sm font-bold">Erro de conexão ao carregar produtos. Verifique os acessos.</p>
+          </div>
+        )}
+      </div>
 
-      <div className="grid gap-6 lg:grid-cols-[1.1fr_2fr]">
-        <div className="rounded-2xl border border-brand-dark/10 bg-white p-6 shadow-sm">
-          <h2 className="text-xl font-semibold text-brand-dark font-heading">Novo produto</h2>
-          <p className="mt-1 text-sm text-brand-dark/60">
-            Preencha os campos abaixo para adicionar um item ao catalogo.
-          </p>
+      {/* Grid Principal UI */}
+      <div className="grid items-start gap-8 lg:grid-cols-[380px_1fr] xl:grid-cols-[440px_1fr]">
+        
+        {/* Barra Lateral Funcional: Criar Produto */}
+        <aside className="sticky top-8 flex flex-col gap-6 rounded-[2rem] border border-brand-dark/5 bg-white p-6 shadow-sm sm:p-8">
+          <div>
+            <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-red/10 text-brand-red shadow-inner">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+            </div>
+            <h2 className="text-2xl font-bold text-brand-dark font-heading">Novo Produto</h2>
+            <p className="mt-2 text-sm leading-relaxed text-brand-dark/60">
+              Preencha o formulário para indexar rapidamente peças ao portfólio.
+            </p>
+          </div>
 
-          <form action={createProductAction} className="mt-5 space-y-4">
-            <div>
-              <label htmlFor="nome" className="mb-1 block text-sm font-medium text-brand-dark">
-                Nome
-              </label>
+          <form action={createProductAction} className="flex flex-col gap-5 border-t border-brand-dark/5 pt-6">
+            <div className="space-y-1.5 focus-within:text-brand-red text-brand-dark transition-colors">
+              <label htmlFor="nome" className="text-sm font-bold uppercase tracking-wide">Nome da Peça</label>
               <input
                 id="nome"
                 name="nome"
@@ -165,18 +192,13 @@ export default async function AdminProductsPage({
                 required
                 minLength={2}
                 maxLength={120}
-                className="w-full rounded-lg border border-brand-dark/20 px-3 py-2 text-sm text-brand-dark outline-none transition focus:border-brand-red focus:ring-2 focus:ring-brand-red/20"
-                placeholder="Ex: Pao Frances"
+                className="w-full rounded-xl border-2 border-brand-dark/10 bg-brand-light/20 px-4 py-3 text-sm text-brand-dark outline-none transition-all placeholder:text-brand-dark/30 hover:border-brand-dark/30 focus:border-brand-red focus:bg-white focus:shadow-[0_0_0_4px_rgba(239,68,68,0.1)]"
+                placeholder="Ex: Pão de Queijo Tradicional"
               />
             </div>
 
-            <div>
-              <label
-                htmlFor="categoria"
-                className="mb-1 block text-sm font-medium text-brand-dark"
-              >
-                Categoria
-              </label>
+            <div className="space-y-1.5 focus-within:text-brand-red text-brand-dark transition-colors">
+              <label htmlFor="categoria" className="text-sm font-bold uppercase tracking-wide">Categoria</label>
               <input
                 id="categoria"
                 name="categoria"
@@ -184,35 +206,25 @@ export default async function AdminProductsPage({
                 required
                 minLength={2}
                 maxLength={80}
-                className="w-full rounded-lg border border-brand-dark/20 px-3 py-2 text-sm text-brand-dark outline-none transition focus:border-brand-red focus:ring-2 focus:ring-brand-red/20"
-                placeholder="Ex: Padaria"
+                className="w-full rounded-xl border-2 border-brand-dark/10 bg-brand-light/20 px-4 py-3 text-sm text-brand-dark outline-none transition-all placeholder:text-brand-dark/30 hover:border-brand-dark/30 focus:border-brand-red focus:bg-white focus:shadow-[0_0_0_4px_rgba(239,68,68,0.1)]"
+                placeholder="Ex: Pães, Confeitaria..."
               />
             </div>
 
-            <div>
-              <label
-                htmlFor="image_url"
-                className="mb-1 block text-sm font-medium text-brand-dark"
-              >
-                URL da imagem
-              </label>
+            <div className="space-y-1.5 focus-within:text-brand-red text-brand-dark transition-colors">
+              <label htmlFor="image_url" className="text-sm font-bold uppercase tracking-wide">URL Mídia</label>
               <input
                 id="image_url"
                 name="image_url"
                 type="text"
                 required
-                className="w-full rounded-lg border border-brand-dark/20 px-3 py-2 text-sm text-brand-dark outline-none transition focus:border-brand-red focus:ring-2 focus:ring-brand-red/20"
-                placeholder="https://... ou /images/produto.jpg"
+                className="w-full rounded-xl border-2 border-brand-dark/10 bg-brand-light/20 px-4 py-3 text-sm text-brand-dark outline-none transition-all placeholder:text-brand-dark/30 hover:border-brand-dark/30 focus:border-brand-red focus:bg-white focus:shadow-[0_0_0_4px_rgba(239,68,68,0.1)]"
+                placeholder="/images/produto.jpg ou link externo"
               />
             </div>
 
-            <div>
-              <label
-                htmlFor="descricao"
-                className="mb-1 block text-sm font-medium text-brand-dark"
-              >
-                Descricao
-              </label>
+            <div className="space-y-1.5 focus-within:text-brand-red text-brand-dark transition-colors">
+              <label htmlFor="descricao" className="text-sm font-bold uppercase tracking-wide">Descrição Completa</label>
               <textarea
                 id="descricao"
                 name="descricao"
@@ -220,194 +232,235 @@ export default async function AdminProductsPage({
                 minLength={5}
                 maxLength={2000}
                 rows={4}
-                className="w-full resize-y rounded-lg border border-brand-dark/20 px-3 py-2 text-sm text-brand-dark outline-none transition focus:border-brand-red focus:ring-2 focus:ring-brand-red/20"
-                placeholder="Detalhes do produto"
+                className="w-full resize-none rounded-xl border-2 border-brand-dark/10 bg-brand-light/20 px-4 py-3 text-sm text-brand-dark outline-none transition-all placeholder:text-brand-dark/30 hover:border-brand-dark/30 focus:border-brand-red focus:bg-white focus:shadow-[0_0_0_4px_rgba(239,68,68,0.1)]"
+                placeholder="Destaques, ingredientes, peso..."
               />
             </div>
 
             <SubmitButton
-              label="Criar produto"
-              pendingLabel="Criando..."
-              className="w-full rounded-lg bg-brand-red px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-red/90 disabled:cursor-not-allowed disabled:opacity-60"
+              label="Publicar Novo Item"
+              pendingLabel="Registrando..."
+              className="mt-4 w-full rounded-xl bg-brand-red px-4 py-4 text-sm font-bold text-white shadow-[0_4px_14px_0_rgba(239,68,68,0.39)] transition-all hover:translate-y-[-2px] hover:bg-brand-red/90 hover:shadow-[0_6px_20px_rgba(239,68,68,0.23)] focus:outline-none focus:ring-4 focus:ring-brand-red/20 disabled:pointer-events-none disabled:opacity-70"
             />
           </form>
-        </div>
+        </aside>
 
-        <div className="rounded-2xl border border-brand-dark/10 bg-white p-6 shadow-sm">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-            <div>
-              <h2 className="text-xl font-semibold text-brand-dark font-heading">Produtos cadastrados</h2>
-              <p className="mt-1 text-sm text-brand-dark/60">
-                Pagina {page} com ate {PAGE_SIZE} itens por consulta.
-              </p>
+        {/* Workspace Central: Listagem */}
+        <div className="flex min-w-0 flex-col gap-6">
+          <div className="flex flex-col gap-6 rounded-[2rem] border border-brand-dark/5 bg-white p-6 shadow-sm sm:p-8">
+            
+            {/* Nav Listagem + Filtros */}
+            <div className="flex flex-col gap-5 border-b border-brand-dark/5 pb-6 xl:flex-row xl:items-end xl:justify-between">
+              <div>
+                <h2 className="text-2xl font-bold text-brand-dark font-heading">Itens em Catálogo</h2>
+                <div className="mt-1.5 flex items-center gap-2 text-sm font-medium text-brand-dark/50">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                  <span>Página {page} navegando até {PAGE_SIZE} resultados.</span>
+                </div>
+              </div>
+
+              <form method="get" className="flex w-full flex-col gap-3 sm:flex-row sm:items-center xl:w-auto">
+                <div className="relative flex-1 xl:w-56">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="absolute left-3.5 top-1/2 -translate-y-1/2 text-brand-dark/30"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                  <input
+                    name="nome"
+                    defaultValue={nome}
+                    placeholder="Filtrar via Nome"
+                    className="w-full rounded-xl border-2 border-brand-dark/5 bg-brand-light/30 py-2.5 pl-10 pr-4 text-sm font-semibold text-brand-dark outline-none transition-all placeholder:font-medium placeholder:text-brand-dark/40 hover:bg-brand-light/60 focus:border-brand-dark/20 focus:bg-white focus:shadow-[0_0_0_4px_rgba(0,0,0,0.03)]"
+                  />
+                </div>
+                <div className="relative flex-1 xl:w-44">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="absolute left-3.5 top-1/2 -translate-y-1/2 text-brand-dark/30"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+                  <input
+                    name="categoria"
+                    defaultValue={categoria}
+                    placeholder="Categoria"
+                    className="w-full rounded-xl border-2 border-brand-dark/5 bg-brand-light/30 py-2.5 pl-10 pr-4 text-sm font-semibold text-brand-dark outline-none transition-all placeholder:font-medium placeholder:text-brand-dark/40 hover:bg-brand-light/60 focus:border-brand-dark/20 focus:bg-white focus:shadow-[0_0_0_4px_rgba(0,0,0,0.03)]"
+                  />
+                </div>
+                <button
+                  type="submit"
+                  className="rounded-xl bg-brand-dark px-6 py-3.5 text-sm font-bold text-white shadow-sm transition-all hover:bg-brand-dark/90 active:scale-95 sm:py-3"
+                >
+                  Filtrar
+                </button>
+              </form>
             </div>
 
-            <form method="get" className="grid w-full gap-2 sm:w-auto sm:grid-cols-[minmax(180px,1fr)_minmax(180px,1fr)_auto]">
-              <input
-                name="nome"
-                defaultValue={nome}
-                placeholder="Buscar por prefixo do nome"
-                className="rounded-lg border border-brand-dark/20 px-3 py-2 text-sm text-brand-dark outline-none transition focus:border-brand-red focus:ring-2 focus:ring-brand-red/20"
-              />
-              <input
-                name="categoria"
-                defaultValue={categoria}
-                placeholder="Filtrar categoria exata"
-                className="rounded-lg border border-brand-dark/20 px-3 py-2 text-sm text-brand-dark outline-none transition focus:border-brand-red focus:ring-2 focus:ring-brand-red/20"
-              />
-              <button
-                type="submit"
-                className="rounded-lg bg-brand-dark px-4 py-2 text-sm font-semibold text-white hover:bg-brand-dark/90"
-              >
-                Aplicar
-              </button>
-            </form>
-          </div>
-
-          <div className="mt-5 space-y-4">
-            {products.length === 0 && !error ? (
-              <div className="rounded-lg border border-dashed border-brand-dark/25 bg-brand-light px-4 py-6 text-center text-sm text-brand-dark/70">
-                Nenhum produto encontrado com os filtros atuais.
-              </div>
-            ) : (
-              products.map((product) => (
-                <article
-                  key={product.id}
-                  className="group overflow-hidden rounded-xl border border-brand-dark/10 bg-white shadow-sm transition-all hover:shadow-md"
-                >
-                  <div className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center">
-                    <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-lg border border-brand-dark/10 bg-brand-light shadow-inner sm:h-28 sm:w-28">
-                      <Image 
-                        src={product.image_url} 
-                        alt={product.nome} 
-                        fill
-                        className="object-cover"
-                      />
-                    </div>
-
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2">
-                        <h3 className="text-xl font-bold text-brand-dark">{product.nome}</h3>
-                        <span className="rounded bg-brand-dark/5 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-brand-dark/50">
-                          ID #{product.id}
-                        </span>
-                      </div>
-                      <p className="mt-1.5 inline-flex items-center rounded-md bg-brand-yellow/20 px-2.5 py-1 text-xs font-semibold text-brand-dark/80 border border-brand-yellow/30">
-                        {product.categoria}
-                      </p>
-                      <p className="mt-2 text-sm leading-relaxed text-brand-dark/70 line-clamp-2">
-                        {product.descricao}
-                      </p>
-                    </div>
-
-                    <div className="flex w-full items-center gap-2 sm:w-auto sm:flex-col sm:items-stretch">
-                      <form action={deleteProductAction} className="w-full sm:w-auto">
-                        <input type="hidden" name="id" value={product.id} />
-                        <SubmitButton
-                          label="Excluir produto"
-                          pendingLabel="Excluindo..."
-                          className="w-full rounded-lg border border-red-200 bg-red-50 px-4 py-2 text-sm font-semibold text-red-600 transition hover:bg-red-100 hover:text-red-700 disabled:cursor-not-allowed disabled:opacity-60"
-                        />
-                      </form>
-                    </div>
+            {/* Listagem Core */}
+            <div className="flex flex-col gap-4">
+              {products.length === 0 && !error ? (
+                <div className="flex flex-col items-center justify-center gap-4 rounded-3xl border-2 border-dashed border-brand-dark/10 bg-brand-light/30 px-6 py-24 text-center transition-all hover:bg-brand-light/50">
+                  <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-white shadow-sm">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-brand-dark/30"><path d="m21 21-4.3-4.3"/><circle cx="11" cy="11" r="8"/><line x1="9" x2="13" y1="11" y2="11"/><line x1="11" x2="11" y1="9" y2="13"/></svg>
                   </div>
+                  <div>
+                    <h3 className="text-xl font-bold text-brand-dark">Sem Resultados Encontrados</h3>
+                    <p className="mx-auto mt-2 max-w-md text-sm font-medium leading-relaxed text-brand-dark/50">
+                      Os critérios selecionados não trouxeram resultados. Altere os filtros aplicados na barra de buscas acima ou crie um novo item.
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                products.map((product) => (
+                  <article
+                    key={product.id}
+                    className="group overflow-hidden rounded-[1.5rem] border border-brand-dark/5 bg-white shadow-sm transition-all hover:translate-y-[-2px] hover:border-brand-dark/15 hover:shadow-lg"
+                  >
+                    {/* View Info Card */}
+                    <div className="flex flex-col p-6 sm:flex-row sm:items-center sm:gap-6">
+                      <div className="relative mb-5 h-40 w-full shrink-0 overflow-hidden rounded-2xl border border-brand-dark/5 bg-brand-light shadow-inner sm:mb-0 sm:h-32 sm:w-32">
+                        <Image 
+                          src={product.image_url} 
+                          alt={product.nome} 
+                          fill
+                          className="object-cover transition-transform duration-700 group-hover:scale-105"
+                        />
+                      </div>
 
-                  <details className="group/edit border-t border-brand-dark/5 bg-brand-light/30">
-                    <summary className="flex cursor-pointer list-none items-center justify-center gap-2 px-4 py-3 text-sm font-semibold text-brand-dark/60 transition hover:bg-brand-dark/5 hover:text-brand-dark focus:outline-none">
-                      <span className="group-open/edit:hidden">Editar Produto ▼</span>
-                      <span className="hidden group-open/edit:inline">Fechar Edição ▲</span>
-                    </summary>
-                    <div className="border-t border-brand-dark/5 p-5 bg-white">
-                      <form action={updateProductAction} className="grid gap-4">
-                        <input type="hidden" name="id" value={product.id} />
-
-                        <div className="grid gap-4 md:grid-cols-2">
-                          <div>
-                            <label className="mb-1.5 block text-sm font-medium text-brand-dark">Nome</label>
-                            <input
-                              name="nome"
-                              defaultValue={product.nome}
-                              minLength={2}
-                              maxLength={120}
-                              required
-                              className="w-full rounded-lg border border-brand-dark/20 bg-brand-light/20 px-3 py-2.5 text-sm text-brand-dark outline-none transition focus:border-brand-red focus:bg-white focus:ring-2 focus:ring-brand-red/20"
-                            />
-                          </div>
-                          <div>
-                            <label className="mb-1.5 block text-sm font-medium text-brand-dark">Categoria</label>
-                            <input
-                              name="categoria"
-                              defaultValue={product.categoria}
-                              minLength={2}
-                              maxLength={80}
-                              required
-                              className="w-full rounded-lg border border-brand-dark/20 bg-brand-light/20 px-3 py-2.5 text-sm text-brand-dark outline-none transition focus:border-brand-red focus:bg-white focus:ring-2 focus:ring-brand-red/20"
-                            />
-                          </div>
+                      <div className="flex flex-1 flex-col min-w-0 justify-center">
+                        <div className="mb-2.5 flex flex-wrap items-center gap-2">
+                          <span className="inline-flex items-center rounded-lg bg-brand-dark/5 px-2.5 py-1 text-[11px] font-black uppercase tracking-widest text-brand-dark/50">
+                            # {product.id}
+                          </span>
+                          <span className="inline-flex items-center rounded-lg border border-brand-yellow/30 bg-brand-yellow/20 px-2.5 py-1 text-[11px] font-black uppercase tracking-wider text-brand-dark/70">
+                            {product.categoria}
+                          </span>
                         </div>
+                        <h3 className="truncate text-xl font-bold text-brand-dark transition-colors group-hover:text-brand-orange sm:text-2xl">
+                          {product.nome}
+                        </h3>
+                        <p className="mt-2 max-w-2xl text-sm font-medium leading-relaxed text-brand-dark/50 line-clamp-2">
+                          {product.descricao}
+                        </p>
+                      </div>
 
-                        <div>
-                          <label className="mb-1.5 block text-sm font-medium text-brand-dark">URL da imagem</label>
-                          <input
-                            name="image_url"
-                            defaultValue={product.image_url}
-                            required
-                            className="w-full rounded-lg border border-brand-dark/20 bg-brand-light/20 px-3 py-2.5 text-sm text-brand-dark outline-none transition focus:border-brand-red focus:bg-white focus:ring-2 focus:ring-brand-red/20"
-                          />
-                        </div>
-
-                        <div>
-                          <label className="mb-1.5 block text-sm font-medium text-brand-dark">Descrição</label>
-                          <textarea
-                            name="descricao"
-                            defaultValue={product.descricao}
-                            minLength={5}
-                            maxLength={2000}
-                            required
-                            rows={3}
-                            className="w-full resize-y rounded-lg border border-brand-dark/20 bg-brand-light/20 px-3 py-2.5 text-sm text-brand-dark outline-none transition focus:border-brand-red focus:bg-white focus:ring-2 focus:ring-brand-red/20"
-                          />
-                        </div>
-
-                        <div className="mt-2 flex justify-end">
+                      <div className="mt-5 flex shrink-0 items-center justify-end border-t border-brand-dark/5 pt-5 sm:mt-0 sm:border-0 sm:pt-0">
+                        <form action={deleteProductAction} className="w-full sm:w-auto">
+                          <input type="hidden" name="id" value={product.id} />
                           <SubmitButton
-                            label="Salvar alterações"
-                            pendingLabel="Salvando..."
-                            className="rounded-lg bg-brand-orange px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-orange/90 shadow-sm disabled:cursor-not-allowed disabled:opacity-60"
+                            label="Deletar Item"
+                            pendingLabel="Deletando..."
+                            className="w-full rounded-xl border-2 border-transparent bg-red-50 px-5 py-3 text-sm font-bold text-red-600 transition-all hover:bg-red-600 hover:text-white focus:outline-none focus:ring-4 focus:ring-red-600/20 disabled:pointer-events-none disabled:opacity-60"
                           />
-                        </div>
-                      </form>
+                        </form>
+                      </div>
                     </div>
-                  </details>
-                </article>
-              ))
-            )}
-          </div>
 
-          <div className="mt-6 flex items-center justify-between border-t border-brand-dark/10 pt-4">
-            <Link
-              href={previousPageUrl}
-              className={`rounded-lg px-4 py-2 text-sm font-semibold transition ${
-                page > 1
-                  ? "bg-brand-dark text-white hover:bg-brand-dark/90"
-                  : "pointer-events-none bg-brand-dark/10 text-brand-dark/40"
-              }`}
-            >
-              Pagina anterior
-            </Link>
-            <span className="text-xs font-medium uppercase tracking-wide text-brand-dark/60">
-              Pagina atual: {page}
-            </span>
-            <Link
-              href={nextPageUrl}
-              className={`rounded-lg px-4 py-2 text-sm font-semibold transition ${
-                hasNextPage
-                  ? "bg-brand-dark text-white hover:bg-brand-dark/90"
-                  : "pointer-events-none bg-brand-dark/10 text-brand-dark/40"
-              }`}
-            >
-              Proxima pagina
-            </Link>
+                    {/* Extensão Dropdown / Modal Edição */}
+                    <details className="group/edit border-t border-brand-dark/5 bg-brand-light/20">
+                      <summary className="flex cursor-pointer list-none items-center justify-center gap-2 px-4 py-4 text-sm font-bold uppercase tracking-widest text-brand-dark/40 transition hover:bg-brand-dark/5 hover:text-brand-dark focus:outline-none">
+                        <span className="flex items-center gap-2 group-open/edit:hidden">
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
+                          Abrir Opções de Edição
+                        </span>
+                        <span className="hidden items-center gap-2 group-open/edit:flex">
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="m18 15-6-6-6 6"/></svg>
+                          Ocultar Configurações
+                        </span>
+                      </summary>
+                      <div className="border-t border-brand-dark/5 bg-white p-6 sm:p-8">
+                        <form action={updateProductAction} className="grid gap-6">
+                          <input type="hidden" name="id" value={product.id} />
+
+                          <div className="grid gap-6 md:grid-cols-2">
+                            <div className="space-y-1.5 focus-within:text-brand-orange text-brand-dark transition-colors">
+                              <label className="text-sm font-bold uppercase tracking-wide">Modificar Nome</label>
+                              <input
+                                name="nome"
+                                defaultValue={product.nome}
+                                minLength={2}
+                                maxLength={120}
+                                required
+                                className="w-full rounded-xl border-2 border-brand-dark/10 bg-brand-light/30 px-4 py-3 text-sm font-semibold text-brand-dark outline-none transition-all hover:border-brand-dark/30 focus:border-brand-orange focus:bg-white focus:shadow-[0_0_0_4px_rgba(249,115,22,0.1)]"
+                              />
+                            </div>
+                            <div className="space-y-1.5 focus-within:text-brand-orange text-brand-dark transition-colors">
+                              <label className="text-sm font-bold uppercase tracking-wide">Nova Categoria</label>
+                              <input
+                                name="categoria"
+                                defaultValue={product.categoria}
+                                minLength={2}
+                                maxLength={80}
+                                required
+                                className="w-full rounded-xl border-2 border-brand-dark/10 bg-brand-light/30 px-4 py-3 text-sm font-semibold text-brand-dark outline-none transition-all hover:border-brand-dark/30 focus:border-brand-orange focus:bg-white focus:shadow-[0_0_0_4px_rgba(249,115,22,0.1)]"
+                              />
+                            </div>
+                          </div>
+
+                          <div className="space-y-1.5 focus-within:text-brand-orange text-brand-dark transition-colors">
+                            <label className="text-sm font-bold uppercase tracking-wide">Atualizar Endereço da Imagem</label>
+                            <input
+                              name="image_url"
+                              defaultValue={product.image_url}
+                              required
+                              className="w-full rounded-xl border-2 border-brand-dark/10 bg-brand-light/30 px-4 py-3 text-sm font-semibold text-brand-dark outline-none transition-all hover:border-brand-dark/30 focus:border-brand-orange focus:bg-white focus:shadow-[0_0_0_4px_rgba(249,115,22,0.1)]"
+                            />
+                          </div>
+
+                          <div className="space-y-1.5 focus-within:text-brand-orange text-brand-dark transition-colors">
+                            <label className="text-sm font-bold uppercase tracking-wide">Reescrever Descrição</label>
+                            <textarea
+                              name="descricao"
+                              defaultValue={product.descricao}
+                              minLength={5}
+                              maxLength={2000}
+                              required
+                              rows={3}
+                              className="w-full resize-none rounded-xl border-2 border-brand-dark/10 bg-brand-light/30 px-4 py-3 text-sm font-semibold text-brand-dark outline-none transition-all hover:border-brand-dark/30 focus:border-brand-orange focus:bg-white focus:shadow-[0_0_0_4px_rgba(249,115,22,0.1)]"
+                            />
+                          </div>
+
+                          <div className="mt-2 flex flex-col justify-end gap-3 sm:flex-row">
+                            <SubmitButton
+                              label="Salvar Alterações Desse Item"
+                              pendingLabel="Gravando..."
+                              className="w-full rounded-xl bg-brand-dark px-8 py-3.5 text-sm font-bold text-white shadow-md transition-all hover:translate-y-[-2px] hover:bg-brand-dark/90 hover:shadow-lg focus:outline-none focus:ring-4 focus:ring-brand-dark/20 disabled:pointer-events-none disabled:opacity-60 sm:w-auto"
+                            />
+                          </div>
+                        </form>
+                      </div>
+                    </details>
+                  </article>
+                ))
+              )}
+            </div>
+
+            {/* Controle de Paginação Customizado */}
+            <div className="mt-6 flex items-center justify-between border-t border-brand-dark/5 pt-6">
+              <Link
+                href={previousPageUrl}
+                className={`group flex items-center gap-2.5 rounded-xl px-5 py-3 text-sm font-bold uppercase tracking-wider transition-all ${
+                  page > 1
+                    ? "bg-brand-dark/5 text-brand-dark hover:bg-brand-dark hover:text-white"
+                    : "pointer-events-none bg-brand-light/50 text-brand-dark/20"
+                }`}
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="transition-transform group-hover:-translate-x-1"><path d="m15 18-6-6 6-6"/></svg>
+                <span className="hidden sm:inline">Recuar</span>
+              </Link>
+              
+              <div className="flex flex-col items-center rounded-xl bg-brand-light/40 px-6 py-2 shadow-inner border border-brand-dark/5">
+                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-brand-dark/50">
+                  Folha
+                </span>
+                <span className="mt-0.5 text-base font-black text-brand-dark">
+                  {page}
+                </span>
+              </div>
+
+              <Link
+                href={nextPageUrl}
+                className={`group flex items-center gap-2.5 rounded-xl px-5 py-3 text-sm font-bold uppercase tracking-wider transition-all ${
+                  hasNextPage
+                    ? "bg-brand-dark/5 text-brand-dark hover:bg-brand-dark hover:text-white"
+                    : "pointer-events-none bg-brand-light/50 text-brand-dark/20"
+                }`}
+              >
+                <span className="hidden sm:inline">Avançar</span>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="transition-transform group-hover:translate-x-1"><path d="m9 18 6-6-6-6"/></svg>
+              </Link>
+            </div>
           </div>
         </div>
       </div>
