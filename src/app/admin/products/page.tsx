@@ -1,6 +1,6 @@
 import Link from "next/link";
-import SubmitButton from "@/components/admin/SubmitButton";
-import CategorySelector from "@/components/admin/CategorySelector";
+import { CreateProductForm, UpdateProductForm, DeleteProductButton } from "@/components/admin/ProductForms";
+import ProductFilters from "@/components/admin/ProductFilters";
 import { requireAdminAccess } from "@/lib/auth/admin";
 import {
   createProductAction,
@@ -13,8 +13,6 @@ type SearchParams = Promise<{
   page?: string | string[];
   nome?: string | string[];
   categoria_id?: string | string[];
-  status?: string | string[];
-  error?: string | string[];
 }>;
 
 interface AdminProductsPageProps {
@@ -49,27 +47,6 @@ function parsePositiveInt(value: string | string[] | undefined): number {
   }
 
   return parsed;
-}
-
-function decodeMessage(value: string | string[] | undefined): string | null {
-  const singleValue = getSingleValue(value);
-  if (!singleValue) return null;
-
-  try {
-    return decodeURIComponent(singleValue);
-  } catch {
-    return singleValue;
-  }
-}
-
-function getStatusMessage(status: string | string[] | undefined): string | null {
-  const normalizedStatus = getSingleValue(status);
-  if (normalizedStatus === "created") return "Produto criado com sucesso.";
-  if (normalizedStatus === "updated") return "Produto atualizado com sucesso.";
-  if (normalizedStatus === "deleted") return "Produto removido com sucesso.";
-  if (normalizedStatus === "category_created")
-    return "Categoria criada com sucesso.";
-  return null;
 }
 
 function buildListUrl(page: number, nome: string, categoriaId: string) {
@@ -128,8 +105,6 @@ export default async function AdminProductsPage({
   const productRows = (data ?? []) as Product[];
   const hasNextPage = productRows.length > PAGE_SIZE;
   const products = hasNextPage ? productRows.slice(0, PAGE_SIZE) : productRows;
-  const statusMessage = getStatusMessage(params.status);
-  const errorMessage = decodeMessage(params.error);
 
   const nextPageUrl = buildListUrl(page + 1, nome, categoriaId);
   const previousPageUrl = buildListUrl(Math.max(page - 1, 1), nome, categoriaId);
@@ -169,30 +144,6 @@ export default async function AdminProductsPage({
         </div>
       </header>
 
-      {/* Alertas Modernos */}
-      <div className="flex flex-col gap-3">
-        {statusMessage && (
-          <div className="flex w-full animate-in fade-in slide-in-from-top-2 items-center gap-3 rounded-2xl border border-green-200 bg-green-50 px-5 py-4 text-green-800 shadow-sm">
-            <svg className="h-5 w-5 shrink-0 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-            <p className="text-sm font-bold">{statusMessage}</p>
-          </div>
-        )}
-
-        {errorMessage && (
-          <div className="flex w-full animate-in fade-in slide-in-from-top-2 items-center gap-3 rounded-2xl border border-red-200 bg-red-50 px-5 py-4 text-red-800 shadow-sm">
-            <svg className="h-5 w-5 shrink-0 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-            <p className="text-sm font-bold">{errorMessage}</p>
-          </div>
-        )}
-
-        {error && (
-          <div className="flex w-full animate-in fade-in slide-in-from-top-2 items-center gap-3 rounded-2xl border border-red-200 bg-red-50 px-5 py-4 text-red-800 shadow-sm">
-            <svg className="h-5 w-5 shrink-0 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-            <p className="text-sm font-bold">Erro de conexão ao carregar produtos. Verifique os acessos.</p>
-          </div>
-        )}
-      </div>
-
       {/* Grid Principal UI */}
       <div className="grid items-start gap-8 lg:grid-cols-[380px_1fr] xl:grid-cols-[440px_1fr]">
         
@@ -208,61 +159,7 @@ export default async function AdminProductsPage({
             </p>
           </div>
 
-          <form action={createProductAction} className="flex flex-col gap-5 border-t border-brand-dark/5 pt-6">
-            <div className="space-y-1.5 focus-within:text-brand-red text-brand-dark transition-colors">
-              <label htmlFor="nome" className="text-sm font-bold uppercase tracking-wide">Nome da Peça</label>
-              <input
-                id="nome"
-                name="nome"
-                type="text"
-                required
-                minLength={2}
-                maxLength={120}
-                className="w-full rounded-xl border-2 border-brand-dark/10 bg-brand-light/20 px-4 py-3 text-sm text-brand-dark outline-none transition-all placeholder:text-brand-dark/30 hover:border-brand-dark/30 focus:border-brand-red focus:bg-white focus:shadow-[0_0_0_4px_rgba(239,68,68,0.1)]"
-                placeholder="Ex: Pão de Queijo Tradicional"
-              />
-            </div>
-
-            <div className="space-y-2 text-brand-dark transition-colors">
-              <label htmlFor="id_categoria" className="text-sm font-bold uppercase tracking-wide">Categoria</label>
-              <CategorySelector initialCategories={categories} />
-              <p className="text-xs text-brand-dark/50">
-                Se não encontrar uma categoria, clique no botão + para criar uma nova.
-              </p>
-            </div>
-
-            <div className="space-y-1.5 focus-within:text-brand-red text-brand-dark transition-colors">
-              <label htmlFor="image_url" className="text-sm font-bold uppercase tracking-wide">URL Mídia</label>
-              <input
-                id="image_url"
-                name="image_url"
-                type="text"
-                required
-                className="w-full rounded-xl border-2 border-brand-dark/10 bg-brand-light/20 px-4 py-3 text-sm text-brand-dark outline-none transition-all placeholder:text-brand-dark/30 hover:border-brand-dark/30 focus:border-brand-red focus:bg-white focus:shadow-[0_0_0_4px_rgba(239,68,68,0.1)]"
-                placeholder="/images/produto.jpg ou link externo"
-              />
-            </div>
-
-            <div className="space-y-1.5 focus-within:text-brand-red text-brand-dark transition-colors">
-              <label htmlFor="descricao" className="text-sm font-bold uppercase tracking-wide">Descrição Completa</label>
-              <textarea
-                id="descricao"
-                name="descricao"
-                required
-                minLength={5}
-                maxLength={2000}
-                rows={4}
-                className="w-full resize-none rounded-xl border-2 border-brand-dark/10 bg-brand-light/20 px-4 py-3 text-sm text-brand-dark outline-none transition-all placeholder:text-brand-dark/30 hover:border-brand-dark/30 focus:border-brand-red focus:bg-white focus:shadow-[0_0_0_4px_rgba(239,68,68,0.1)]"
-                placeholder="Destaques, ingredientes, peso..."
-              />
-            </div>
-
-            <SubmitButton
-              label="Publicar Novo Item"
-              pendingLabel="Registrando..."
-              className="mt-4 w-full rounded-xl bg-brand-red px-4 py-4 text-sm font-bold text-white shadow-[0_4px_14px_0_rgba(239,68,68,0.39)] transition-all hover:translate-y-[-2px] hover:bg-brand-red/90 hover:shadow-[0_6px_20px_rgba(239,68,68,0.23)] focus:outline-none focus:ring-4 focus:ring-brand-red/20 disabled:pointer-events-none disabled:opacity-70"
-            />
-          </form>
+          <CreateProductForm categories={categories} />
         </aside>
 
         {/* Workspace Central: Listagem */}
@@ -279,38 +176,7 @@ export default async function AdminProductsPage({
                 </div>
               </div>
 
-              <form method="get" className="flex w-full flex-col gap-3 sm:flex-row sm:items-center xl:w-auto">
-                <div className="relative flex-1 xl:w-48">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="absolute left-3.5 top-1/2 -translate-y-1/2 text-brand-dark/30"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-                  <input
-                    name="nome"
-                    defaultValue={nome}
-                    placeholder="Filtrar via Nome"
-                    className="w-full rounded-xl border-2 border-brand-dark/5 bg-brand-light/30 py-2.5 pl-10 pr-4 text-sm font-semibold text-brand-dark outline-none transition-all placeholder:font-medium placeholder:text-brand-dark/40 hover:bg-brand-light/60 focus:border-brand-dark/20 focus:bg-white focus:shadow-[0_0_0_4px_rgba(0,0,0,0.03)]"
-                  />
-                </div>
-                <div className="relative flex-1 xl:w-48">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="absolute left-3.5 top-1/2 -translate-y-1/2 text-brand-dark/30"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
-                  <select
-                    name="categoria_id"
-                    defaultValue={categoriaId}
-                    className="w-full rounded-xl border-2 border-brand-dark/5 bg-brand-light/30 py-2.5 pl-10 pr-4 text-sm font-semibold text-brand-dark outline-none transition-all hover:bg-brand-light/60 focus:border-brand-dark/20 focus:bg-white focus:shadow-[0_0_0_4px_rgba(0,0,0,0.03)]"
-                  >
-                    <option value="">Todas categorias</option>
-                    {categories.map((category) => (
-                      <option key={category.id} value={category.id}>
-                        {category.category}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <button
-                  type="submit"
-                  className="w-full rounded-xl border-2 border-transparent bg-brand-dark px-8 py-2.5 text-sm font-bold text-white shadow-sm transition-all hover:bg-brand-dark/90 active:scale-95 sm:w-auto"
-                >
-                  Filtrar
-                </button>
-              </form>
+              <ProductFilters categories={categories} />
             </div>
 
             {/* Listagem Core */}
@@ -362,14 +228,7 @@ export default async function AdminProductsPage({
                       </div>
 
                       <div className="mt-5 flex shrink-0 items-center justify-end border-t border-brand-dark/5 pt-5 sm:mt-0 sm:border-0 sm:pt-0">
-                        <form action={deleteProductAction} className="w-full sm:w-auto">
-                          <input type="hidden" name="id" value={product.id} />
-                          <SubmitButton
-                            label="Deletar Item"
-                            pendingLabel="Deletando..."
-                            className="w-full rounded-xl border-2 border-transparent bg-red-50 px-5 py-3 text-sm font-bold text-red-600 transition-all hover:bg-red-600 hover:text-white focus:outline-none focus:ring-4 focus:ring-red-600/20 disabled:pointer-events-none disabled:opacity-60"
-                          />
-                        </form>
+                        <DeleteProductButton productId={product.id} />
                       </div>
                     </div>
 
@@ -386,72 +245,7 @@ export default async function AdminProductsPage({
                         </span>
                       </summary>
                       <div className="border-t border-brand-dark/5 bg-white p-6 sm:p-8">
-                        <form action={updateProductAction} className="grid gap-6">
-                          <input type="hidden" name="id" value={product.id} />
-
-                          <div className="grid gap-6 md:grid-cols-2">
-                            <div className="space-y-1.5 focus-within:text-brand-orange text-brand-dark transition-colors">
-                              <label className="text-sm font-bold uppercase tracking-wide">Modificar Nome</label>
-                              <input
-                                name="nome"
-                                defaultValue={product.nome}
-                                minLength={2}
-                                maxLength={120}
-                                required
-                                className="w-full rounded-xl border-2 border-brand-dark/10 bg-brand-light/30 px-4 py-3 text-sm font-semibold text-brand-dark outline-none transition-all hover:border-brand-dark/30 focus:border-brand-orange focus:bg-white focus:shadow-[0_0_0_4px_rgba(249,115,22,0.1)]"
-                              />
-                            </div>
-                            <div className="space-y-1.5 focus-within:text-brand-orange text-brand-dark transition-colors">
-                              <label className="text-sm font-bold uppercase tracking-wide">Nova Categoria</label>
-                              <select
-                                name="id_categoria"
-                                defaultValue={String(product.id_categoria)}
-                                required
-                                className="w-full rounded-xl border-2 border-brand-dark/10 bg-brand-light/30 px-4 py-3 text-sm font-semibold text-brand-dark outline-none transition-all hover:border-brand-dark/30 focus:border-brand-orange focus:bg-white focus:shadow-[0_0_0_4px_rgba(249,115,22,0.1)]"
-                              >
-                                <option value="" disabled>
-                                  Selecione uma categoria
-                                </option>
-                                {categories.map((category) => (
-                                  <option key={category.id} value={category.id}>
-                                    {category.category}
-                                  </option>
-                                ))}
-                              </select>
-                            </div>
-                          </div>
-
-                          <div className="space-y-1.5 focus-within:text-brand-orange text-brand-dark transition-colors">
-                            <label className="text-sm font-bold uppercase tracking-wide">Atualizar Endereço da Imagem</label>
-                            <input
-                              name="image_url"
-                              defaultValue={product.image_url}
-                              required
-                              className="w-full rounded-xl border-2 border-brand-dark/10 bg-brand-light/30 px-4 py-3 text-sm font-semibold text-brand-dark outline-none transition-all hover:border-brand-dark/30 focus:border-brand-orange focus:bg-white focus:shadow-[0_0_0_4px_rgba(249,115,22,0.1)]"
-                            />
-                          </div>
-
-                          <div className="space-y-1.5 focus-within:text-brand-orange text-brand-dark transition-colors">
-                            <label className="text-sm font-bold uppercase tracking-wide">Reescrever Descrição</label>
-                            <textarea
-                              name="descricao"
-                              defaultValue={product.descricao}
-                              minLength={5}
-                              maxLength={2000}
-                              required
-                              rows={3}
-                              className="w-full resize-none rounded-xl border-2 border-brand-dark/10 bg-brand-light/30 px-4 py-3 text-sm font-semibold text-brand-dark outline-none transition-all hover:border-brand-dark/30 focus:border-brand-orange focus:bg-white focus:shadow-[0_0_0_4px_rgba(249,115,22,0.1)]"
-                            />
-                          </div>
-
-                          <div className="mt-2 flex flex-col justify-end gap-3 sm:flex-row">
-                            <SubmitButton
-                              label="Salvar Alterações Desse Item"
-                              pendingLabel="Gravando..."
-                              className="w-full rounded-xl bg-brand-dark px-8 py-3.5 text-sm font-bold text-white shadow-md transition-all hover:translate-y-[-2px] hover:bg-brand-dark/90 hover:shadow-lg focus:outline-none focus:ring-4 focus:ring-brand-dark/20 disabled:pointer-events-none disabled:opacity-60 sm:w-auto"
-                            />
-                          </div>
-                        </form>
+                        <UpdateProductForm product={product} categories={categories} />
                       </div>
                     </details>
                   </article>

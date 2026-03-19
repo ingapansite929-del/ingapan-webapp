@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import type { ReactNode } from "react";
+import { ToastProvider } from "@/components/Toast";
 import LogoutButton from "@/components/LogoutButton";
 import { requireAdminAccess } from "@/lib/auth/admin";
 
@@ -46,7 +47,9 @@ export default async function AdminLayout({ children }: AdminLayoutProps) {
         </div>
       </header>
 
-      <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">{children}</main>
+      <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+        <ToastProvider>{children}</ToastProvider>
+      </main>
     </div>
   );
 }

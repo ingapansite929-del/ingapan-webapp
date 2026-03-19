@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { createCategoryJsonAction } from "@/app/admin/products/actions";
 import { Plus, X, Loader2 } from "lucide-react";
+import { useToast } from "@/components/Toast";
 
 interface Category {
   id: number;
@@ -15,12 +16,12 @@ interface CategorySelectorProps {
 }
 
 export default function CategorySelector({ initialCategories }: CategorySelectorProps) {
+  const { addToast } = useToast();
   const [categories, setCategories] = useState<Category[]>(initialCategories);
   const [selectedCategory, setSelectedCategory] = useState<string>("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -30,7 +31,6 @@ export default function CategorySelector({ initialCategories }: CategorySelector
   async function handleCreateCategory() {
     if (!newCategoryName.trim()) return;
     setIsLoading(true);
-    setError(null);
 
     try {
       const result = await createCategoryJsonAction(newCategoryName);
@@ -39,12 +39,13 @@ export default function CategorySelector({ initialCategories }: CategorySelector
         setSelectedCategory(String(result.category.id));
         setNewCategoryName("");
         setIsModalOpen(false);
+        addToast("Categoria criada com sucesso!", "success");
       } else {
-        setError(result.error || "Erro ao criar categoria");
+        addToast(result.error || "Erro ao criar categoria", "error");
       }
     } catch (e) {
       console.error(e);
-      setError("Erro inesperado ao criar categoria");
+      addToast("Erro inesperado ao criar categoria", "error");
     } finally {
       setIsLoading(false);
     }
@@ -116,7 +117,6 @@ export default function CategorySelector({ initialCategories }: CategorySelector
                     }
                   }}
                 />
-                {error && <p className="text-xs text-red-500 font-medium">{error}</p>}
               </div>
               
               <div className="flex justify-end gap-3 pt-2">

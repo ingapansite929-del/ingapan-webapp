@@ -133,7 +133,7 @@ export async function createProductAction(formData: FormData) {
 
   const { data, error } = parseProductInput(formData);
   if (!data || error) {
-    redirectWithError(error ?? "Dados do produto inválidos.");
+    return { success: false, message: error ?? "Dados do produto inválidos." };
   }
 
   const { error: insertError } = await supabase.from("products").insert({
@@ -144,11 +144,11 @@ export async function createProductAction(formData: FormData) {
   });
 
   if (insertError) {
-    redirectWithError("Nao foi possivel criar o produto.");
+    return { success: false, message: "Nao foi possivel criar o produto." };
   }
 
   revalidatePath(ADMIN_PRODUCTS_PATH);
-  redirectWithStatus("created");
+  return { success: true, message: "Produto criado com sucesso!" };
 }
 
 export async function updateProductAction(formData: FormData) {
@@ -160,7 +160,7 @@ export async function updateProductAction(formData: FormData) {
 
   const { data, error } = parseProductInput(formData, true);
   if (!data || error || !data.id) {
-    redirectWithError(error ?? "Dados para atualização inválidos.");
+    return { success: false, message: error ?? "Dados para atualização inválidos." };
   }
 
   const { error: updateError } = await supabase
@@ -174,11 +174,11 @@ export async function updateProductAction(formData: FormData) {
     .eq("id", data.id);
 
   if (updateError) {
-    redirectWithError("Nao foi possivel atualizar o produto.");
+    return { success: false, message: "Nao foi possivel atualizar o produto." };
   }
 
   revalidatePath(ADMIN_PRODUCTS_PATH);
-  redirectWithStatus("updated");
+  return { success: true, message: "Produto atualizado com sucesso!" };
 }
 
 export async function deleteProductAction(formData: FormData) {
@@ -190,7 +190,7 @@ export async function deleteProductAction(formData: FormData) {
 
   const id = parseId(formData.get("id"));
   if (!id) {
-    redirectWithError("ID inválido para remoção.");
+    return { success: false, message: "ID inválido para remoção." };
   }
 
   const { error: deleteError } = await supabase
@@ -199,11 +199,11 @@ export async function deleteProductAction(formData: FormData) {
     .eq("id", id);
 
   if (deleteError) {
-    redirectWithError("Nao foi possivel excluir o produto.");
+    return { success: false, message: "Nao foi possivel excluir o produto." };
   }
 
   revalidatePath(ADMIN_PRODUCTS_PATH);
-  redirectWithStatus("deleted");
+  return { success: true, message: "Produto removido com sucesso!" };
 }
 
 export async function createProductCategoryAction(formData: FormData) {
@@ -216,7 +216,7 @@ export async function createProductCategoryAction(formData: FormData) {
   const category = normalizeText(formData.get("category"));
   const categoryError = validateLength("Categoria", category, 2, 80);
   if (categoryError) {
-    redirectWithError(categoryError);
+    return { success: false, message: categoryError };
   }
 
   const { error: insertError } = await supabase
@@ -224,15 +224,15 @@ export async function createProductCategoryAction(formData: FormData) {
     .insert({ category });
 
   if (insertError?.code === "23505") {
-    redirectWithError("Essa categoria já existe.");
+    return { success: false, message: "Essa categoria já existe." };
   }
 
   if (insertError) {
-    redirectWithError("Nao foi possivel criar a categoria.");
+    return { success: false, message: "Nao foi possivel criar a categoria." };
   }
 
   revalidatePath(ADMIN_PRODUCTS_PATH);
-  redirectWithStatus("category_created");
+  return { success: true, message: "Categoria criada com sucesso!" };
 }
 
 export async function createCategoryJsonAction(categoryName: string) {
