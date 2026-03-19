@@ -22,6 +22,10 @@ function validateCNPJ(cnpj: string): boolean {
   return true;
 }
 
+function validateEmail(email: string): boolean {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
+
 export default function CadastroPage() {
   const [nome, setNome] = useState("");
   const [email, setEmail] = useState("");
@@ -40,6 +44,8 @@ export default function CadastroPage() {
     e.preventDefault();
     setLoading(true);
     setError(null);
+
+    const normalizedEmail = email.trim().toLowerCase();
 
     // Validations
     if (password !== confirmPassword) {
@@ -60,10 +66,16 @@ export default function CadastroPage() {
       return;
     }
 
+    if (!validateEmail(normalizedEmail)) {
+      setError("Email inválido. Verifique e tente novamente.");
+      setLoading(false);
+      return;
+    }
+
     const supabase = createClient();
     
     const { error } = await supabase.auth.signUp({
-      email,
+      email: normalizedEmail,
       password,
       options: {
         emailRedirectTo:
@@ -77,7 +89,9 @@ export default function CadastroPage() {
     });
 
     if (error) {
-      if (error.message.includes("already registered")) {
+      if (error.code === "over_email_send_rate_limit") {
+        setError("Muitas tentativas de envio de email. Aguarde 60 segundos e tente novamente.");
+      } else if (error.message.includes("already registered")) {
         setError("Este email já está cadastrado.");
       } else {
         setError("Erro ao criar conta. Tente novamente.");
