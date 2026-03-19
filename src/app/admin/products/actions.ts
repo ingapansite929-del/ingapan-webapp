@@ -9,7 +9,7 @@ const ADMIN_PRODUCTS_PATH = "/admin/products";
 type ProductInput = {
   id?: number;
   nome: string;
-  categoria: string;
+  id_categoria: number;
   descricao: string;
   imageUrl: string;
 };
@@ -65,15 +65,16 @@ function parseProductInput(formData: FormData, includeId = false): {
   error: string | null;
 } {
   const nome = normalizeText(formData.get("nome"));
-  const categoria = normalizeText(formData.get("categoria"));
+  const idCategoria = parseId(formData.get("id_categoria"));
   const descricao = normalizeText(formData.get("descricao"));
   const imageUrl = normalizeText(formData.get("image_url"));
 
   const nomeError = validateLength("Nome", nome, 2, 120);
   if (nomeError) return { data: null, error: nomeError };
 
-  const categoriaError = validateLength("Categoria", categoria, 2, 80);
-  if (categoriaError) return { data: null, error: categoriaError };
+  if (!idCategoria) {
+    return { data: null, error: "Categoria inválida." };
+  }
 
   const descricaoError = validateLength("Descrição", descricao, 5, 2000);
   if (descricaoError) return { data: null, error: descricaoError };
@@ -85,7 +86,7 @@ function parseProductInput(formData: FormData, includeId = false): {
     return {
       data: {
         nome,
-        categoria,
+        id_categoria: idCategoria,
         descricao,
         imageUrl,
       },
@@ -105,7 +106,7 @@ function parseProductInput(formData: FormData, includeId = false): {
     data: {
       id,
       nome,
-      categoria,
+      id_categoria: idCategoria,
       descricao,
       imageUrl,
     },
@@ -137,7 +138,7 @@ export async function createProductAction(formData: FormData) {
 
   const { error: insertError } = await supabase.from("products").insert({
     nome: data.nome,
-    categoria: data.categoria,
+    id_categoria: data.id_categoria,
     descricao: data.descricao,
     image_url: data.imageUrl,
   });
@@ -166,7 +167,7 @@ export async function updateProductAction(formData: FormData) {
     .from("products")
     .update({
       nome: data.nome,
-      categoria: data.categoria,
+      id_categoria: data.id_categoria,
       descricao: data.descricao,
       image_url: data.imageUrl,
     })
@@ -203,4 +204,33 @@ export async function deleteProductAction(formData: FormData) {
 
   revalidatePath(ADMIN_PRODUCTS_PATH);
   redirectWithStatus("deleted");
+}
+
+export async function createProductCategoryAction(formData: FormData) {
+  const { supabase } = await requireAdminAccess({
+    forbiddenRedirectPath:
+      "/admin/products?error=" +
+      encodeURIComponent("Acesso negado ao painel admin."),
+  });
+
+  const category = normalizeText(formData.get("category"));
+  const categoryError = validateLength("Categoria", category, 2, 80);
+  if (categoryError) {
+    redirectWithError(categoryError);
+  }
+
+  const { error: insertError } = await supabase
+    .from("product_categoria")
+    .insert({ category });
+
+  if (insertError?.code === "23505") {
+    redirectWithError("Essa categoria já existe.");
+  }
+
+  if (insertError) {
+    redirectWithError("Nao foi possivel criar a categoria.");
+  }
+
+  revalidatePath(ADMIN_PRODUCTS_PATH);
+  redirectWithStatus("category_created");
 }

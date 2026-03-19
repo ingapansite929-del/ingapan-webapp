@@ -3,6 +3,7 @@ import SubmitButton from "@/components/admin/SubmitButton";
 import { requireAdminAccess } from "@/lib/auth/admin";
 import {
   createProductAction,
+  createProductCategoryAction,
   deleteProductAction,
   updateProductAction,
 } from "@/app/admin/products/actions";
@@ -11,7 +12,7 @@ import Image from "next/image";
 type SearchParams = Promise<{
   page?: string | string[];
   nome?: string | string[];
-  categoria?: string | string[];
+  categoria_id?: string | string[];
   status?: string | string[];
   error?: string | string[];
 }>;
@@ -23,9 +24,15 @@ interface AdminProductsPageProps {
 interface Product {
   id: number;
   nome: string;
-  categoria: string;
+  id_categoria: number;
   descricao: string;
   image_url: string;
+  product_categoria?: { id: number; category: string } | { id: number; category: string }[] | null;
+}
+
+interface ProductCategory {
+  id: number;
+  category: string;
 }
 
 const PAGE_SIZE = 15;
@@ -60,15 +67,25 @@ function getStatusMessage(status: string | string[] | undefined): string | null 
   if (normalizedStatus === "created") return "Produto criado com sucesso.";
   if (normalizedStatus === "updated") return "Produto atualizado com sucesso.";
   if (normalizedStatus === "deleted") return "Produto removido com sucesso.";
+  if (normalizedStatus === "category_created")
+    return "Categoria criada com sucesso.";
   return null;
 }
 
-function buildListUrl(page: number, nome: string, categoria: string) {
+function buildListUrl(page: number, nome: string, categoriaId: string) {
   const params = new URLSearchParams();
   if (page > 1) params.set("page", String(page));
   if (nome) params.set("nome", nome);
-  if (categoria) params.set("categoria", categoria);
+  if (categoriaId) params.set("categoria_id", categoriaId);
   return `/admin/products${params.toString() ? `?${params.toString()}` : ""}`;
+}
+
+function getProductCategoryName(product: Product): string {
+  const categoryRelation = product.product_categoria;
+  if (Array.isArray(categoryRelation)) {
+    return categoryRelation[0]?.category ?? "Sem categoria";
+  }
+  return categoryRelation?.category ?? "Sem categoria";
 }
 
 export default async function AdminProductsPage({
@@ -77,21 +94,30 @@ export default async function AdminProductsPage({
   const params = await searchParams;
   const page = parsePositiveInt(params.page);
   const nome = getSingleValue(params.nome).trim();
-  const categoria = getSingleValue(params.categoria).trim();
+  const categoriaId = getSingleValue(params.categoria_id).trim();
 
   const { supabase } = await requireAdminAccess();
 
+  const { data: categoriesData } = await supabase
+    .from("product_categoria")
+    .select("id, category")
+    .order("category", { ascending: true });
+  const categories = (categoriesData ?? []) as ProductCategory[];
+
   let query = supabase
     .from("products")
-    .select("id, nome, categoria, descricao, image_url")
+    .select("id, nome, id_categoria, descricao, image_url, product_categoria(id, category)")
     .order("id", { ascending: false });
 
   if (nome) {
     query = query.ilike("nome", `${nome}%`);
   }
 
-  if (categoria) {
-    query = query.eq("categoria", categoria);
+  if (categoriaId) {
+    const selectedCategoryId = Number(categoriaId);
+    if (Number.isInteger(selectedCategoryId) && selectedCategoryId > 0) {
+      query = query.eq("id_categoria", selectedCategoryId);
+    }
   }
 
   const from = (page - 1) * PAGE_SIZE;
@@ -105,8 +131,8 @@ export default async function AdminProductsPage({
   const statusMessage = getStatusMessage(params.status);
   const errorMessage = decodeMessage(params.error);
 
-  const nextPageUrl = buildListUrl(page + 1, nome, categoria);
-  const previousPageUrl = buildListUrl(Math.max(page - 1, 1), nome, categoria);
+  const nextPageUrl = buildListUrl(page + 1, nome, categoriaId);
+  const previousPageUrl = buildListUrl(Math.max(page - 1, 1), nome, categoriaId);
 
   return (
     <section className="mx-auto flex max-w-[1400px] flex-col gap-8 pb-12 px-4 sm:px-6 lg:px-8">
@@ -197,18 +223,50 @@ export default async function AdminProductsPage({
               />
             </div>
 
-            <div className="space-y-1.5 focus-within:text-brand-red text-brand-dark transition-colors">
-              <label htmlFor="categoria" className="text-sm font-bold uppercase tracking-wide">Categoria</label>
-              <input
-                id="categoria"
-                name="categoria"
-                type="text"
-                required
-                minLength={2}
-                maxLength={80}
-                className="w-full rounded-xl border-2 border-brand-dark/10 bg-brand-light/20 px-4 py-3 text-sm text-brand-dark outline-none transition-all placeholder:text-brand-dark/30 hover:border-brand-dark/30 focus:border-brand-red focus:bg-white focus:shadow-[0_0_0_4px_rgba(239,68,68,0.1)]"
-                placeholder="Ex: Pães, Confeitaria..."
-              />
+            <div className="space-y-2 text-brand-dark transition-colors">
+              <label htmlFor="id_categoria" className="text-sm font-bold uppercase tracking-wide">Categoria</label>
+              <div className="flex gap-2">
+                <select
+                  id="id_categoria"
+                  name="id_categoria"
+                  required
+                  defaultValue=""
+                  disabled={categories.length === 0}
+                  className="w-full rounded-xl border-2 border-brand-dark/10 bg-brand-light/20 px-4 py-3 text-sm text-brand-dark outline-none transition-all hover:border-brand-dark/30 focus:border-brand-red focus:bg-white focus:shadow-[0_0_0_4px_rgba(239,68,68,0.1)] disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  <option value="" disabled>
+                    {categories.length === 0
+                      ? "Crie uma categoria para continuar"
+                      : "Selecione uma categoria"}
+                  </option>
+                  {categories.map((category) => (
+                    <option key={category.id} value={category.id}>
+                      {category.category}
+                    </option>
+                  ))}
+                </select>
+                <div className="flex w-[210px] gap-2">
+                  <input
+                    name="category"
+                    type="text"
+                    minLength={2}
+                    maxLength={80}
+                    className="min-w-0 flex-1 rounded-xl border-2 border-brand-dark/10 bg-white px-3 py-3 text-sm text-brand-dark outline-none transition-all placeholder:text-brand-dark/30 hover:border-brand-dark/30 focus:border-brand-red focus:shadow-[0_0_0_4px_rgba(239,68,68,0.1)]"
+                    placeholder="Nova categoria"
+                  />
+                  <button
+                    type="submit"
+                    formAction={createProductCategoryAction}
+                    formNoValidate
+                    className="rounded-xl bg-brand-dark px-3 py-3 text-xs font-bold uppercase tracking-wide text-white transition-all hover:bg-brand-dark/90 focus:outline-none focus:ring-4 focus:ring-brand-dark/20 disabled:pointer-events-none disabled:opacity-70"
+                  >
+                    Criar
+                  </button>
+                </div>
+              </div>
+              <p className="text-xs text-brand-dark/50">
+                Se não encontrar uma categoria, crie ao lado e salve o produto em seguida.
+              </p>
             </div>
 
             <div className="space-y-1.5 focus-within:text-brand-red text-brand-dark transition-colors">
@@ -269,14 +327,20 @@ export default async function AdminProductsPage({
                     className="w-full rounded-xl border-2 border-brand-dark/5 bg-brand-light/30 py-2.5 pl-10 pr-4 text-sm font-semibold text-brand-dark outline-none transition-all placeholder:font-medium placeholder:text-brand-dark/40 hover:bg-brand-light/60 focus:border-brand-dark/20 focus:bg-white focus:shadow-[0_0_0_4px_rgba(0,0,0,0.03)]"
                   />
                 </div>
-                <div className="relative flex-1 xl:w-44">
+                <div className="relative flex-1 xl:w-56">
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="absolute left-3.5 top-1/2 -translate-y-1/2 text-brand-dark/30"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
-                  <input
-                    name="categoria"
-                    defaultValue={categoria}
-                    placeholder="Categoria"
-                    className="w-full rounded-xl border-2 border-brand-dark/5 bg-brand-light/30 py-2.5 pl-10 pr-4 text-sm font-semibold text-brand-dark outline-none transition-all placeholder:font-medium placeholder:text-brand-dark/40 hover:bg-brand-light/60 focus:border-brand-dark/20 focus:bg-white focus:shadow-[0_0_0_4px_rgba(0,0,0,0.03)]"
-                  />
+                  <select
+                    name="categoria_id"
+                    defaultValue={categoriaId}
+                    className="w-full rounded-xl border-2 border-brand-dark/5 bg-brand-light/30 py-2.5 pl-10 pr-4 text-sm font-semibold text-brand-dark outline-none transition-all hover:bg-brand-light/60 focus:border-brand-dark/20 focus:bg-white focus:shadow-[0_0_0_4px_rgba(0,0,0,0.03)]"
+                  >
+                    <option value="">Todas categorias</option>
+                    {categories.map((category) => (
+                      <option key={category.id} value={category.id}>
+                        {category.category}
+                      </option>
+                    ))}
+                  </select>
                 </div>
                 <button
                   type="submit"
@@ -324,7 +388,7 @@ export default async function AdminProductsPage({
                             # {product.id}
                           </span>
                           <span className="inline-flex items-center rounded-lg border border-brand-yellow/30 bg-brand-yellow/20 px-2.5 py-1 text-[11px] font-black uppercase tracking-wider text-brand-dark/70">
-                            {product.categoria}
+                            {getProductCategoryName(product)}
                           </span>
                         </div>
                         <h3 className="truncate text-xl font-bold text-brand-dark transition-colors group-hover:text-brand-orange sm:text-2xl">
@@ -377,14 +441,21 @@ export default async function AdminProductsPage({
                             </div>
                             <div className="space-y-1.5 focus-within:text-brand-orange text-brand-dark transition-colors">
                               <label className="text-sm font-bold uppercase tracking-wide">Nova Categoria</label>
-                              <input
-                                name="categoria"
-                                defaultValue={product.categoria}
-                                minLength={2}
-                                maxLength={80}
+                              <select
+                                name="id_categoria"
+                                defaultValue={String(product.id_categoria)}
                                 required
                                 className="w-full rounded-xl border-2 border-brand-dark/10 bg-brand-light/30 px-4 py-3 text-sm font-semibold text-brand-dark outline-none transition-all hover:border-brand-dark/30 focus:border-brand-orange focus:bg-white focus:shadow-[0_0_0_4px_rgba(249,115,22,0.1)]"
-                              />
+                              >
+                                <option value="" disabled>
+                                  Selecione uma categoria
+                                </option>
+                                {categories.map((category) => (
+                                  <option key={category.id} value={category.id}>
+                                    {category.category}
+                                  </option>
+                                ))}
+                              </select>
                             </div>
                           </div>
 
