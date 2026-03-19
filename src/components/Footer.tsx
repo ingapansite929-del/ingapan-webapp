@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import { CONTACT, SOCIAL_LINKS } from "@/lib/constants";
 import ScrollReveal from "./ScrollReveal";
+import Image from "next/image";
 
 const socialIcons: Record<string, React.ReactNode> = {
   instagram: <Instagram size={20} />,
@@ -22,10 +23,14 @@ export default function Footer() {
         <div className="grid gap-12 md:grid-cols-2 lg:grid-cols-3">
           {/* Brand */}
           <ScrollReveal>
-            <div>
-              <span className="font-[var(--font-heading)] text-2xl font-extrabold tracking-tight">
-                INGA<span className="text-brand-yellow">PAN</span>
-              </span>
+            <div className="flex flex-col items-center text-center">
+              <Image
+                src="/images/LOGO.png"
+                alt="IngaPan"
+                width={200}
+                height={133}
+                className="h-auto w-48"
+              />
               <p className="mt-4 max-w-xs text-sm leading-relaxed text-gray-400">
                 Distribuidora de produtos alimentícios. Qualidade, variedade
                 e confiança para abastecer seu negócio com os melhores

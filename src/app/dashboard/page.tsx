@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { createClient } from "@/lib/supabase/server";
+import { isAdminRole } from "@/lib/auth/admin";
 import LogoutButton from "@/components/LogoutButton";
 
 export default async function DashboardPage() {
@@ -18,6 +19,8 @@ export default async function DashboardPage() {
     .select("*")
     .eq("id", user.id)
     .single();
+
+  const isAdmin = isAdminRole(cliente?.role);
 
   return (
     <div className="min-h-screen bg-brand-light">
@@ -55,51 +58,15 @@ export default async function DashboardPage() {
           <p className="text-brand-dark/60 mt-2">
             Gerencie seus pedidos e informações de conta
           </p>
-        </div>
 
-        {/* Stats Cards */}
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 mb-8">
-          <div className="bg-white rounded-xl shadow-sm p-6">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-brand-red/10 rounded-lg flex items-center justify-center">
-                <svg className="w-6 h-6 text-brand-red" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-                </svg>
-              </div>
-              <div>
-                <p className="text-sm text-brand-dark/60">Pedidos</p>
-                <p className="text-2xl font-bold text-brand-dark">0</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-xl shadow-sm p-6">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-brand-yellow/20 rounded-lg flex items-center justify-center">
-                <svg className="w-6 h-6 text-brand-orange" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </div>
-              <div>
-                <p className="text-sm text-brand-dark/60">Pendentes</p>
-                <p className="text-2xl font-bold text-brand-dark">0</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-xl shadow-sm p-6">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                </svg>
-              </div>
-              <div>
-                <p className="text-sm text-brand-dark/60">Entregues</p>
-                <p className="text-2xl font-bold text-brand-dark">0</p>
-              </div>
-            </div>
-          </div>
+          {isAdmin && (
+            <Link
+              href="/admin/products"
+              className="mt-4 inline-flex items-center gap-2 rounded-lg bg-brand-red px-4 py-2 text-sm font-semibold text-white transition-all hover:bg-brand-red/90 hover:shadow-lg"
+            >
+              Abrir painel admin de produtos
+            </Link>
+          )}
         </div>
 
         {/* Account Info */}
@@ -130,11 +97,11 @@ export default async function DashboardPage() {
             <div>
               <p className="text-sm text-brand-dark/60">Tipo de conta</p>
               <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                cliente?.role === "admin_ingapan"
+                isAdmin
                   ? "bg-brand-red/10 text-brand-red"
                   : "bg-brand-yellow/20 text-brand-orange"
               }`}>
-                {cliente?.role === "admin_ingapan" ? "Administrador" : "Cliente"}
+                {isAdmin ? "Administrador" : "Cliente"}
               </span>
             </div>
           </div>
