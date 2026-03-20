@@ -90,9 +90,9 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
     <>
       <Header />
       
-      <main className="min-h-screen bg-gradient-to-b from-brand-light/30 to-white pt-20 md:pt-24">
+      <main className="min-h-screen bg-gradient-to-b from-brand-light/30 to-white">
         {/* Hero Section */}
-        <section className="relative overflow-hidden bg-brand-dark py-16 md:py-24">
+        <section className="relative overflow-hidden bg-brand-dark pb-16 pt-32 md:pb-24 md:pt-40">
           <div className="pointer-events-none absolute -right-32 top-0 h-[400px] w-[400px] rounded-full bg-brand-yellow/10 blur-[120px]"></div>
           <div className="pointer-events-none absolute -left-32 bottom-0 h-[400px] w-[400px] rounded-full bg-brand-red/10 blur-[120px]"></div>
           

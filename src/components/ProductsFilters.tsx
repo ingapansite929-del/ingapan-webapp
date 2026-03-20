@@ -39,7 +39,7 @@ export default function ProductsFilters({
     }
 
     startTransition(() => {
-      router.push(`/produtos${params.toString() ? `?${params.toString()}` : ""}`);
+      router.push(`/produtos${params.toString() ? `?${params.toString()}` : ""}`, { scroll: false });
     });
   };
 
@@ -55,14 +55,14 @@ export default function ProductsFilters({
     }
 
     startTransition(() => {
-      router.push(`/produtos${params.toString() ? `?${params.toString()}` : ""}`);
+      router.push(`/produtos${params.toString() ? `?${params.toString()}` : ""}`, { scroll: false });
     });
   };
 
   const clearFilters = () => {
     setSearchTerm("");
     startTransition(() => {
-      router.push("/produtos");
+      router.push("/produtos", { scroll: false });
     });
   };
 
