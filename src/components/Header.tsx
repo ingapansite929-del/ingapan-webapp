@@ -29,10 +29,7 @@ export default function Header() {
     >
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between md:h-20">
-          <button
-            onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-            className="flex items-center"
-          >
+          <Link href="/" className="flex items-center">
             <Image
               src="/images/LOGO.png"
               alt="IngaPan"
@@ -43,7 +40,7 @@ export default function Header() {
               }`}
               priority
             />
-          </button>
+          </Link>
 
           <div className="flex items-center gap-3">
             <Link
