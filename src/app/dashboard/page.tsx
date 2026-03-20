@@ -4,6 +4,7 @@ import Image from "next/image";
 import { createClient } from "@/lib/supabase/server";
 import { isAdminRole } from "@/lib/auth/admin";
 import LogoutButton from "@/components/LogoutButton";
+import AdminProductButton from "@/components/AdminProductButton";
 
 export default async function DashboardPage() {
   const supabase = await createClient();
@@ -60,12 +61,7 @@ export default async function DashboardPage() {
           </p>
 
           {isAdmin && (
-            <Link
-              href="/admin/products"
-              className="mt-4 inline-flex items-center gap-2 rounded-lg bg-brand-red px-4 py-2 text-sm font-semibold text-white transition-all hover:bg-brand-red/90 hover:shadow-lg"
-            >
-              Abrir painel admin de produtos
-            </Link>
+            <AdminProductButton />
           )}
         </div>
 
