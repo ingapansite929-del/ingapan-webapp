@@ -2,7 +2,8 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { ChevronLeft, ChevronRight, Package } from "lucide-react";
+import { ChevronLeft, ChevronRight, Package, ShoppingCart } from "lucide-react";
+import { useCart } from "@/lib/CartContext";
 
 interface Product {
   id: number;
@@ -36,6 +37,8 @@ export default function ProductsGrid({
   currentNome,
   currentCategoria,
 }: ProductsGridProps) {
+  const { addItem } = useCart();
+  
   const previousPageUrl = buildUrl(
     Math.max(currentPage - 1, 1),
     currentNome,
@@ -109,9 +112,12 @@ export default function ProductsGrid({
                 <span className="text-xs font-bold uppercase tracking-wider text-brand-dark/40">
                   Cód. #{product.id}
                 </span>
-                <button className="flex items-center gap-1.5 rounded-lg bg-brand-yellow/10 px-3 py-2 text-sm font-semibold text-brand-dark transition-all hover:bg-brand-yellow hover:shadow-md">
-                  Ver Detalhes
-                  <ChevronRight className="h-4 w-4" />
+                <button
+                  onClick={() => addItem(product)}
+                  className="flex items-center gap-1.5 rounded-lg bg-brand-yellow px-4 py-2 text-sm font-bold text-brand-dark transition-all hover:bg-brand-yellow/90 hover:shadow-lg active:scale-95"
+                >
+                  <ShoppingCart className="h-4 w-4" />
+                  Adicionar
                 </button>
               </div>
             </div>

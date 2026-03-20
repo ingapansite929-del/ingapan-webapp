@@ -3,9 +3,12 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { ShoppingCart } from "lucide-react";
+import { useCart } from "@/lib/CartContext";
 
 export default function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
+  const { openCart, itemCount } = useCart();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -63,6 +66,24 @@ export default function Header() {
             >
               Área do Cliente
             </Link>
+            
+            <button
+              onClick={openCart}
+              className={`relative rounded-full p-2 transition-all duration-200 hover:scale-105 md:p-2.5 ${
+                isScrolled
+                  ? "bg-brand-dark/10 text-brand-dark hover:bg-brand-dark/20"
+                  : "bg-white/20 text-white hover:bg-white/30"
+              }`}
+              aria-label="Abrir carrinho"
+            >
+              <ShoppingCart className="h-5 w-5 md:h-6 md:w-6" />
+              {itemCount > 0 && (
+                <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-brand-red text-xs font-bold text-white shadow-sm">
+                  {itemCount}
+                </span>
+              )}
+            </button>
+
             <button
               onClick={() => scrollToSection("contato")}
               className="rounded-full bg-brand-red px-5 py-2.5 text-sm font-semibold text-white transition-all duration-200 hover:scale-105 hover:shadow-lg hover:bg-brand-red/90 md:px-6 md:py-3 md:text-base"
