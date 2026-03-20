@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { ShoppingCart } from "lucide-react";
 import { useCart } from "@/lib/CartContext";
+import UserMenu from "./UserMenu";
 
 export default function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -56,16 +57,8 @@ export default function Header() {
             >
               Produtos
             </Link>
-            <Link
-              href="/auth/login"
-              className={`rounded-full px-4 py-2 text-sm font-semibold transition-all duration-200 hover:scale-105 md:px-5 md:py-2.5 md:text-base ${
-                isScrolled
-                  ? "bg-brand-dark/10 text-brand-dark hover:bg-brand-dark/20"
-                  : "bg-white/20 text-white hover:bg-white/30"
-              }`}
-            >
-              Área do Cliente
-            </Link>
+            
+            <UserMenu isScrolled={isScrolled} />
             
             <button
               onClick={openCart}
