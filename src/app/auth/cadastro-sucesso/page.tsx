@@ -36,19 +36,6 @@ export default function CadastroSucessoPage() {
             Cadastro realizado!
           </h1>
 
-          <p className="text-brand-dark/60 mb-6">
-            Enviamos um email de confirmação para o endereço cadastrado. Por
-            favor, verifique sua caixa de entrada e clique no link para ativar
-            sua conta.
-          </p>
-
-          <div className="bg-brand-yellow/10 border border-brand-yellow/30 rounded-lg p-4 mb-6">
-            <p className="text-sm text-brand-dark/80">
-              Não recebeu o email? Verifique sua pasta de spam ou aguarde alguns
-              minutos.
-            </p>
-          </div>
-
           <Link
             href="/auth/login"
             className="inline-block w-full bg-brand-red text-white font-semibold py-3 px-4 rounded-lg hover:bg-brand-red/90 transition-all duration-200 hover:shadow-lg"

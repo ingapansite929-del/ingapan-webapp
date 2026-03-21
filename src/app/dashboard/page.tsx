@@ -54,10 +54,10 @@ export default async function DashboardPage() {
       <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-brand-dark font-heading">
-            Bem-vindo ao seu painel
+            {isAdmin ? "Bem-vindo ao seu painel" : "Informações da conta"}
           </h1>
           <p className="text-brand-dark/60 mt-2">
-            Gerencie seus pedidos e informações de conta
+            {isAdmin ? "Gerencie seus produtos e informações" : "Informações de conta"}
           </p>
 
           {isAdmin && (
@@ -66,7 +66,7 @@ export default async function DashboardPage() {
         </div>
 
         {/* Account Info */}
-        <div className="bg-white rounded-xl shadow-sm p-6">
+       { !isAdmin && <div className="bg-white rounded-xl shadow-sm p-6">
           <h2 className="text-xl font-bold text-brand-dark font-heading mb-4">
             Informações da conta
           </h2>
@@ -101,7 +101,7 @@ export default async function DashboardPage() {
               </span>
             </div>
           </div>
-        </div>
+        </div>}
       </main>
     </div>
   );
