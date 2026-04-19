@@ -2,7 +2,7 @@
 
 ## Arquivo atual de referencia
 
-**`004_current_schema_snapshot.sql`** e o snapshot oficial do schema do banco
+**`009_current_schema_snapshot.sql`** e o snapshot oficial do schema do banco
 Supabase (schema `public`). Ele reflete o estado REAL do banco, incluindo
 alteracoes feitas diretamente pelo painel do Supabase.
 
@@ -22,9 +22,14 @@ mais o estado atual do banco**. Estao preservados apenas como historico:
 - `001_create_clientes_table.sql`
 - `002_products_admin_panel_rls.sql`
 - `003_fix_admin_role_rls.sql`
+- `004_current_schema_snapshot.sql`
+- `005_products_featured_table.sql`
+- `006_products_featured_limit.sql`
+- `007_product_stats_views_tracking.sql`
+- `008_client_orders_management.sql`
 
 Nao os utilize como fonte de verdade do schema. Sempre consulte
-`004_current_schema_snapshot.sql` ou o proprio Supabase.
+`009_current_schema_snapshot.sql` ou o proprio Supabase.
 
 ## Fluxo recomendado para futuras alteracoes
 
@@ -32,5 +37,5 @@ Nao os utilize como fonte de verdade do schema. Sempre consulte
 2. Criar um novo arquivo incremental (ex: `005_add_pedidos_table.sql`) com
    apenas o delta da mudanca.
 3. Atualizar o snapshot completo gerando um novo arquivo
-   (ex: `006_current_schema_snapshot.sql`) que substitua o 004 como
+   (ex: `010_current_schema_snapshot.sql`) que substitua o atual como
    referencia atual.
