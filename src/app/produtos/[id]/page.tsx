@@ -6,6 +6,7 @@ import { Clock3, ShieldCheck, Truck } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import ProductDetailActions from "@/components/products/ProductDetailActions";
+import ProductViewTracker from "@/components/products/ProductViewTracker";
 import RelatedProductsGrid from "@/components/products/RelatedProductsGrid";
 import {
   getProductById,
@@ -72,6 +73,7 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
 
   return (
     <>
+      <ProductViewTracker productId={product.id} />
       <Header />
 
       <main className="min-h-screen bg-gradient-to-b from-brand-light/30 via-white to-white pt-24 md:pt-28">
