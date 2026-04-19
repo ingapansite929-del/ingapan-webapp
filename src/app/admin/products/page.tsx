@@ -100,7 +100,7 @@ export default async function AdminProductsPage({
   let products: Product[] = [];
   let hasNextPage = false;
   let featuredProducts: FeaturedProduct[] = [];
-  let allProducts: Product[] = [];
+  let featuredProductsCatalog: Product[] = [];
   let error: string | null = null;
 
   if (activeTab === "catalogo") {
@@ -148,22 +148,25 @@ export default async function AdminProductsPage({
 
     featuredProducts = (featuredData ?? []) as FeaturedProduct[];
 
-    const { data: productsData, error: productsError } = await supabase
-      .from("products")
-      .select("id, nome, id_categoria, descricao, image_url, product_categoria(id, category)")
-      .order("nome", { ascending: true });
+    const featuredProductIds = featuredProducts.map((item) => item.product_id);
+    if (featuredProductIds.length > 0) {
+      const { data: productsData, error: productsError } = await supabase
+        .from("products")
+        .select("id, nome, id_categoria, descricao, image_url, product_categoria(id, category)")
+        .in("id", featuredProductIds);
 
-    if (productsError) {
-      error = productsError.message;
+      if (productsError) {
+        error = productsError.message;
+      }
+
+      featuredProductsCatalog = (productsData ?? []) as Product[];
     }
-
-    allProducts = (productsData ?? []) as Product[];
   }
 
   const nextPageUrl = buildListUrl(page + 1, nome, categoriaId, activeTab);
   const previousPageUrl = buildListUrl(Math.max(page - 1, 1), nome, categoriaId, activeTab);
-  const featuredProductsById = new Map(allProducts.map((product) => [product.id, product]));
   const featuredProductIds = featuredProducts.map((item) => item.product_id);
+  const featuredProductsById = new Map(featuredProductsCatalog.map((product) => [product.id, product]));
   const featuredItems = featuredProducts.map((featured) => {
     const product = featuredProductsById.get(featured.product_id) ?? null;
 
@@ -387,7 +390,6 @@ export default async function AdminProductsPage({
             </div>
 
             <CreateFeaturedProductForm
-              products={allProducts}
               featuredProductIds={featuredProductIds}
             />
           </aside>

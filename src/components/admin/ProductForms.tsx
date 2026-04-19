@@ -10,8 +10,10 @@ import {
   updateProductAction,
   deleteProductAction,
   createFeaturedProductAction,
+  listFeaturedSelectableProductsAction,
   reorderFeaturedProductsAction,
   deleteFeaturedProductAction,
+  type FeaturedSelectableProduct,
 } from "@/app/admin/products/actions";
 
 interface Category {
@@ -270,22 +272,88 @@ export function DeleteProductButton({ productId }: DeleteProductButtonProps) {
 }
 
 interface CreateFeaturedProductFormProps {
-  products: Product[];
   featuredProductIds: number[];
 }
 
 const MAX_FEATURED_PRODUCTS = 10;
+const FEATURED_SELECTOR_PAGE_SIZE = 15;
 
 export function CreateFeaturedProductForm({
-  products,
   featuredProductIds,
 }: CreateFeaturedProductFormProps) {
   const { addToast } = useToast();
   const [isPending, startTransition] = useTransition();
   const formRef = useRef<HTMLFormElement>(null);
-  const featuredSet = new Set(featuredProductIds);
-  const availableProducts = products.filter((product) => !featuredSet.has(product.id));
+  const [searchTerm, setSearchTerm] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [selectedProductId, setSelectedProductId] = useState("");
+  const [isLoadingOptions, setIsLoadingOptions] = useState(false);
+  const [optionsError, setOptionsError] = useState<string | null>(null);
+  const [hasNextPage, setHasNextPage] = useState(false);
+  const [availableProducts, setAvailableProducts] = useState<FeaturedSelectableProduct[]>([]);
   const isLimitReached = featuredProductIds.length >= MAX_FEATURED_PRODUCTS;
+
+  useEffect(() => {
+    if (isLimitReached) {
+      setAvailableProducts([]);
+      setHasNextPage(false);
+      setOptionsError(null);
+      return;
+    }
+
+    let cancelled = false;
+
+    async function loadProducts() {
+      setIsLoadingOptions(true);
+
+      try {
+        const result = await listFeaturedSelectableProductsAction({
+          page: currentPage,
+          search: searchTerm,
+          excludedProductIds: featuredProductIds,
+        });
+
+        if (cancelled) {
+          return;
+        }
+
+        if (!result.success) {
+          setAvailableProducts([]);
+          setHasNextPage(false);
+          setSelectedProductId("");
+          setOptionsError(result.message ?? "Não foi possível carregar produtos.");
+          return;
+        }
+
+        const products = result.products ?? [];
+        const nextPage = result.hasNextPage ?? false;
+
+        setAvailableProducts(products);
+        setHasNextPage(nextPage);
+        setOptionsError(null);
+        setSelectedProductId((current) =>
+          products.some((product) => String(product.id) === current) ? current : ""
+        );
+      } catch {
+        if (!cancelled) {
+          setAvailableProducts([]);
+          setHasNextPage(false);
+          setSelectedProductId("");
+          setOptionsError("Erro inesperado ao carregar produtos.");
+        }
+      } finally {
+        if (!cancelled) {
+          setIsLoadingOptions(false);
+        }
+      }
+    }
+
+    void loadProducts();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [currentPage, featuredProductIds, isLimitReached, searchTerm]);
 
   async function handleSubmit(formData: FormData) {
     startTransition(async () => {
@@ -294,6 +362,8 @@ export function CreateFeaturedProductForm({
         if (result.success) {
           addToast(result.message, "success");
           formRef.current?.reset();
+          setSelectedProductId("");
+          setCurrentPage(1);
         } else {
           addToast(result.message, "error");
         }
@@ -306,22 +376,45 @@ export function CreateFeaturedProductForm({
   return (
     <form ref={formRef} action={handleSubmit} className="flex flex-col gap-5 border-t border-brand-dark/5 pt-6">
       <div className="space-y-1.5 focus-within:text-brand-red text-brand-dark transition-colors">
-        <label htmlFor="product_id" className="text-sm font-bold uppercase tracking-wide">
+        <label htmlFor="product_search" className="text-sm font-bold uppercase tracking-wide">
+          Buscar produto
+        </label>
+        <input
+          id="product_search"
+          type="text"
+          value={searchTerm}
+          onChange={(event) => {
+            setSearchTerm(event.target.value);
+            setCurrentPage(1);
+          }}
+          disabled={isPending || isLimitReached}
+          placeholder="Digite parte do nome"
+          className="w-full rounded-xl border-2 border-brand-dark/10 bg-brand-light/20 px-4 py-3 text-sm text-brand-dark outline-none transition-all placeholder:text-brand-dark/30 hover:border-brand-dark/30 focus:border-brand-red focus:bg-white focus:shadow-[0_0_0_4px_rgba(239,68,68,0.1)] disabled:cursor-not-allowed disabled:opacity-60"
+        />
+      </div>
+
+      <div className="space-y-1.5 focus-within:text-brand-red text-brand-dark transition-colors">
+        <label htmlFor="product_id_selector" className="text-sm font-bold uppercase tracking-wide">
           Produto
         </label>
+        <input type="hidden" name="product_id" value={selectedProductId} />
         <select
-          id="product_id"
-          name="product_id"
+          id="product_id_selector"
           required
-          disabled={availableProducts.length === 0 || isPending || isLimitReached}
+          value={selectedProductId}
+          onChange={(event) => setSelectedProductId(event.target.value)}
+          disabled={isLoadingOptions || availableProducts.length === 0 || isPending || isLimitReached}
           className="w-full rounded-xl border-2 border-brand-dark/10 bg-brand-light/20 px-4 py-3 text-sm text-brand-dark outline-none transition-all hover:border-brand-dark/30 focus:border-brand-red focus:bg-white focus:shadow-[0_0_0_4px_rgba(239,68,68,0.1)] disabled:cursor-not-allowed disabled:opacity-60"
-          defaultValue=""
         >
           <option value="" disabled>
             {isLimitReached
               ? "Limite de 10 destaques atingido"
+              : isLoadingOptions
+                ? "Carregando produtos..."
+                : optionsError
+                  ? "Erro ao carregar lista de produtos"
               : availableProducts.length === 0
-                ? "Todos os produtos já estão em destaque"
+                ? "Nenhum produto encontrado"
                 : "Selecione um produto"}
           </option>
           {availableProducts.map((product) => (
@@ -332,13 +425,41 @@ export function CreateFeaturedProductForm({
         </select>
       </div>
 
+      {optionsError ? (
+        <p className="text-xs font-semibold text-brand-red">{optionsError}</p>
+      ) : null}
+
+      {!isLimitReached ? (
+        <div className="flex items-center justify-between gap-3 rounded-xl border border-brand-dark/10 bg-brand-light/20 px-3 py-2 text-xs font-semibold text-brand-dark/70">
+          <button
+            type="button"
+            onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}
+            disabled={isPending || isLoadingOptions || currentPage <= 1}
+            className="rounded-lg border border-brand-dark/10 bg-white px-3 py-1.5 transition hover:bg-brand-light disabled:opacity-50"
+          >
+            Anterior
+          </button>
+          <span>
+            Página {currentPage} - {FEATURED_SELECTOR_PAGE_SIZE} itens
+          </span>
+          <button
+            type="button"
+            onClick={() => setCurrentPage((page) => page + 1)}
+            disabled={isPending || isLoadingOptions || !hasNextPage}
+            className="rounded-lg border border-brand-dark/10 bg-white px-3 py-1.5 transition hover:bg-brand-light disabled:opacity-50"
+          >
+            Próxima
+          </button>
+        </div>
+      ) : null}
+
       <div className="rounded-xl border border-brand-dark/10 bg-brand-light/40 px-4 py-3 text-xs font-medium text-brand-dark/70">
         Novos destaques entram automaticamente na primeira posição do carrossel.
       </div>
 
       <button
         type="submit"
-        disabled={isPending || availableProducts.length === 0 || isLimitReached}
+        disabled={isPending || !selectedProductId || isLimitReached}
         className="mt-4 w-full flex items-center justify-center gap-2 rounded-xl bg-brand-red px-4 py-4 text-sm font-bold text-white shadow-[0_4px_14px_0_rgba(239,68,68,0.39)] transition-all hover:translate-y-[-2px] hover:bg-brand-red/90 hover:shadow-[0_6px_20px_rgba(239,68,68,0.23)] focus:outline-none focus:ring-4 focus:ring-brand-red/20 disabled:pointer-events-none disabled:opacity-70"
       >
         {isPending ? (
