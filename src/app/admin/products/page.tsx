@@ -202,6 +202,7 @@ export default async function AdminProductsPage({
       <div className="flex flex-wrap gap-3 rounded-2xl border border-brand-dark/5 bg-white p-3 shadow-sm">
         <Link
           href="/admin/products"
+          scroll={false}
           className={`inline-flex items-center rounded-xl px-4 py-2 text-sm font-bold uppercase tracking-wide transition ${
             activeTab === "catalogo"
               ? "bg-brand-dark text-white"
@@ -212,6 +213,7 @@ export default async function AdminProductsPage({
         </Link>
         <Link
           href="/admin/products?tab=destaques"
+          scroll={false}
           className={`inline-flex items-center rounded-xl px-4 py-2 text-sm font-bold uppercase tracking-wide transition ${
             activeTab === "destaques"
               ? "bg-brand-dark text-white"
