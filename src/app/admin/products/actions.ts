@@ -1,10 +1,10 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
 import { requireAdminAccess } from "@/lib/auth/admin";
 
 const ADMIN_PRODUCTS_PATH = "/admin/products";
+const HOME_PATH = "/";
 
 type ProductInput = {
   id?: number;
@@ -52,6 +52,15 @@ function validateImageUrl(rawValue: string): string | null {
 }
 
 function parseId(value: FormDataEntryValue | null): number | null {
+  const parsed = Number(typeof value === "string" ? value : "");
+  if (!Number.isInteger(parsed) || parsed <= 0) {
+    return null;
+  }
+
+  return parsed;
+}
+
+function parseDisplayOrder(value: FormDataEntryValue | null): number | null {
   const parsed = Number(typeof value === "string" ? value : "");
   if (!Number.isInteger(parsed) || parsed <= 0) {
     return null;
@@ -112,16 +121,6 @@ function parseProductInput(formData: FormData, includeId = false): {
     },
     error: null,
   };
-}
-
-function redirectWithError(errorMessage: string): never {
-  redirect(
-    `${ADMIN_PRODUCTS_PATH}?error=${encodeURIComponent(errorMessage)}`
-  );
-}
-
-function redirectWithStatus(status: string): never {
-  redirect(`${ADMIN_PRODUCTS_PATH}?status=${encodeURIComponent(status)}`);
 }
 
 export async function createProductAction(formData: FormData) {
@@ -264,4 +263,110 @@ export async function createCategoryJsonAction(categoryName: string) {
 
   revalidatePath(ADMIN_PRODUCTS_PATH);
   return { success: true, category: data };
+}
+
+export async function createFeaturedProductAction(formData: FormData) {
+  const { supabase } = await requireAdminAccess({
+    forbiddenRedirectPath:
+      "/admin/products?error=" +
+      encodeURIComponent("Acesso negado ao painel admin."),
+  });
+
+  const productId = parseId(formData.get("product_id"));
+  const displayOrder = parseDisplayOrder(formData.get("display_order"));
+
+  if (!productId) {
+    return { success: false, message: "Produto inválido para destaque." };
+  }
+
+  if (!displayOrder) {
+    return { success: false, message: "Ordem de exibição inválida." };
+  }
+
+  const { data: existingProduct, error: productError } = await supabase
+    .from("products")
+    .select("id")
+    .eq("id", productId)
+    .maybeSingle();
+
+  if (productError || !existingProduct) {
+    return { success: false, message: "Produto não encontrado." };
+  }
+
+  const { error: insertError } = await supabase
+    .from("products_featured")
+    .insert({
+      product_id: productId,
+      display_order: displayOrder,
+    });
+
+  if (insertError?.code === "23505") {
+    return { success: false, message: "Esse produto já está em destaque." };
+  }
+
+  if (insertError) {
+    return { success: false, message: "Não foi possível destacar o produto." };
+  }
+
+  revalidatePath(ADMIN_PRODUCTS_PATH);
+  revalidatePath(HOME_PATH);
+  return { success: true, message: "Produto adicionado aos destaques!" };
+}
+
+export async function updateFeaturedProductOrderAction(formData: FormData) {
+  const { supabase } = await requireAdminAccess({
+    forbiddenRedirectPath:
+      "/admin/products?error=" +
+      encodeURIComponent("Acesso negado ao painel admin."),
+  });
+
+  const featuredId = parseId(formData.get("id"));
+  const displayOrder = parseDisplayOrder(formData.get("display_order"));
+
+  if (!featuredId) {
+    return { success: false, message: "Registro de destaque inválido." };
+  }
+
+  if (!displayOrder) {
+    return { success: false, message: "Ordem de exibição inválida." };
+  }
+
+  const { error: updateError } = await supabase
+    .from("products_featured")
+    .update({ display_order: displayOrder })
+    .eq("id", featuredId);
+
+  if (updateError) {
+    return { success: false, message: "Não foi possível atualizar a ordem." };
+  }
+
+  revalidatePath(ADMIN_PRODUCTS_PATH);
+  revalidatePath(HOME_PATH);
+  return { success: true, message: "Ordem de destaque atualizada!" };
+}
+
+export async function deleteFeaturedProductAction(formData: FormData) {
+  const { supabase } = await requireAdminAccess({
+    forbiddenRedirectPath:
+      "/admin/products?error=" +
+      encodeURIComponent("Acesso negado ao painel admin."),
+  });
+
+  const featuredId = parseId(formData.get("id"));
+  if (!featuredId) {
+    return { success: false, message: "Registro de destaque inválido." };
+  }
+
+  const { error: deleteError } = await supabase
+    .from("products_featured")
+    .delete()
+    .eq("id", featuredId);
+
+  if (deleteError) {
+    return { success: false, message: "Não foi possível remover o destaque." };
+  }
+
+  revalidatePath(ADMIN_PRODUCTS_PATH);
+  revalidatePath(HOME_PATH);
+  return { success: true, message: "Produto removido dos destaques." };
 }

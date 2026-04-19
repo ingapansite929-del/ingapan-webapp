@@ -7,7 +7,10 @@ import { Loader2 } from "lucide-react";
 import {
   createProductAction,
   updateProductAction,
-  deleteProductAction
+  deleteProductAction,
+  createFeaturedProductAction,
+  updateFeaturedProductOrderAction,
+  deleteFeaturedProductAction,
 } from "@/app/admin/products/actions";
 
 interface Category {
@@ -260,6 +263,186 @@ export function DeleteProductButton({ productId }: DeleteProductButtonProps) {
         ) : (
           "Deletar Item"
         )}
+      </button>
+    </form>
+  );
+}
+
+interface CreateFeaturedProductFormProps {
+  products: Product[];
+  featuredProductIds: number[];
+}
+
+export function CreateFeaturedProductForm({
+  products,
+  featuredProductIds,
+}: CreateFeaturedProductFormProps) {
+  const { addToast } = useToast();
+  const [isPending, startTransition] = useTransition();
+  const formRef = useRef<HTMLFormElement>(null);
+  const featuredSet = new Set(featuredProductIds);
+  const availableProducts = products.filter((product) => !featuredSet.has(product.id));
+
+  async function handleSubmit(formData: FormData) {
+    startTransition(async () => {
+      try {
+        const result = await createFeaturedProductAction(formData);
+        if (result.success) {
+          addToast(result.message, "success");
+          formRef.current?.reset();
+        } else {
+          addToast(result.message, "error");
+        }
+      } catch {
+        addToast("Erro inesperado ao adicionar destaque", "error");
+      }
+    });
+  }
+
+  return (
+    <form ref={formRef} action={handleSubmit} className="flex flex-col gap-5 border-t border-brand-dark/5 pt-6">
+      <div className="space-y-1.5 focus-within:text-brand-red text-brand-dark transition-colors">
+        <label htmlFor="product_id" className="text-sm font-bold uppercase tracking-wide">
+          Produto
+        </label>
+        <select
+          id="product_id"
+          name="product_id"
+          required
+          disabled={availableProducts.length === 0 || isPending}
+          className="w-full rounded-xl border-2 border-brand-dark/10 bg-brand-light/20 px-4 py-3 text-sm text-brand-dark outline-none transition-all hover:border-brand-dark/30 focus:border-brand-red focus:bg-white focus:shadow-[0_0_0_4px_rgba(239,68,68,0.1)] disabled:cursor-not-allowed disabled:opacity-60"
+          defaultValue=""
+        >
+          <option value="" disabled>
+            {availableProducts.length === 0 ? "Todos os produtos já estão em destaque" : "Selecione um produto"}
+          </option>
+          {availableProducts.map((product) => (
+            <option key={product.id} value={product.id}>
+              #{product.id} - {product.nome}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      <div className="space-y-1.5 focus-within:text-brand-red text-brand-dark transition-colors">
+        <label htmlFor="display_order" className="text-sm font-bold uppercase tracking-wide">
+          Ordem de Exibição
+        </label>
+        <input
+          id="display_order"
+          name="display_order"
+          type="number"
+          min={1}
+          defaultValue={1}
+          required
+          disabled={availableProducts.length === 0 || isPending}
+          className="w-full rounded-xl border-2 border-brand-dark/10 bg-brand-light/20 px-4 py-3 text-sm text-brand-dark outline-none transition-all placeholder:text-brand-dark/30 hover:border-brand-dark/30 focus:border-brand-red focus:bg-white focus:shadow-[0_0_0_4px_rgba(239,68,68,0.1)] disabled:cursor-not-allowed disabled:opacity-60"
+        />
+      </div>
+
+      <button
+        type="submit"
+        disabled={isPending || availableProducts.length === 0}
+        className="mt-4 w-full flex items-center justify-center gap-2 rounded-xl bg-brand-red px-4 py-4 text-sm font-bold text-white shadow-[0_4px_14px_0_rgba(239,68,68,0.39)] transition-all hover:translate-y-[-2px] hover:bg-brand-red/90 hover:shadow-[0_6px_20px_rgba(239,68,68,0.23)] focus:outline-none focus:ring-4 focus:ring-brand-red/20 disabled:pointer-events-none disabled:opacity-70"
+      >
+        {isPending ? (
+          <>
+            <Loader2 className="h-5 w-5 animate-spin" />
+            Adicionando...
+          </>
+        ) : (
+          "Adicionar aos Destaques"
+        )}
+      </button>
+    </form>
+  );
+}
+
+interface UpdateFeaturedOrderFormProps {
+  featuredId: number;
+  currentOrder: number;
+}
+
+export function UpdateFeaturedOrderForm({
+  featuredId,
+  currentOrder,
+}: UpdateFeaturedOrderFormProps) {
+  const { addToast } = useToast();
+  const [isPending, startTransition] = useTransition();
+
+  async function handleSubmit(formData: FormData) {
+    startTransition(async () => {
+      try {
+        const result = await updateFeaturedProductOrderAction(formData);
+        if (result.success) {
+          addToast(result.message, "success");
+        } else {
+          addToast(result.message, "error");
+        }
+      } catch {
+        addToast("Erro inesperado ao atualizar ordem", "error");
+      }
+    });
+  }
+
+  return (
+    <form action={handleSubmit} className="flex items-center gap-2">
+      <input type="hidden" name="id" value={featuredId} />
+      <input
+        name="display_order"
+        type="number"
+        min={1}
+        required
+        defaultValue={currentOrder}
+        className="w-24 rounded-lg border border-brand-dark/15 bg-white px-3 py-2 text-sm font-semibold text-brand-dark outline-none transition-all focus:border-brand-orange focus:ring-4 focus:ring-brand-orange/15"
+      />
+      <button
+        type="submit"
+        disabled={isPending}
+        className="rounded-lg bg-brand-dark px-3 py-2 text-xs font-bold uppercase tracking-wide text-white transition hover:bg-brand-dark/90 disabled:opacity-60"
+      >
+        {isPending ? "..." : "Salvar"}
+      </button>
+    </form>
+  );
+}
+
+interface DeleteFeaturedProductButtonProps {
+  featuredId: number;
+}
+
+export function DeleteFeaturedProductButton({
+  featuredId,
+}: DeleteFeaturedProductButtonProps) {
+  const { addToast } = useToast();
+  const [isPending, startTransition] = useTransition();
+
+  async function handleDelete(formData: FormData) {
+    if (!confirm("Remover este produto dos destaques?")) return;
+
+    startTransition(async () => {
+      try {
+        const result = await deleteFeaturedProductAction(formData);
+        if (result.success) {
+          addToast(result.message, "success");
+        } else {
+          addToast(result.message, "error");
+        }
+      } catch {
+        addToast("Erro inesperado ao remover destaque", "error");
+      }
+    });
+  }
+
+  return (
+    <form action={handleDelete}>
+      <input type="hidden" name="id" value={featuredId} />
+      <button
+        type="submit"
+        disabled={isPending}
+        className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs font-bold uppercase tracking-wide text-red-600 transition hover:bg-red-600 hover:text-white disabled:opacity-60"
+      >
+        {isPending ? "..." : "Remover"}
       </button>
     </form>
   );
