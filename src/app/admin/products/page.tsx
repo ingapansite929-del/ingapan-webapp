@@ -5,8 +5,7 @@ import {
   UpdateProductForm,
   DeleteProductButton,
   CreateFeaturedProductForm,
-  UpdateFeaturedOrderForm,
-  DeleteFeaturedProductButton,
+  FeaturedProductsReorderForm,
 } from "@/components/admin/ProductForms";
 import ProductFilters from "@/components/admin/ProductFilters";
 import { requireAdminAccess } from "@/lib/auth/admin";
@@ -165,6 +164,18 @@ export default async function AdminProductsPage({
   const previousPageUrl = buildListUrl(Math.max(page - 1, 1), nome, categoriaId, activeTab);
   const featuredProductsById = new Map(allProducts.map((product) => [product.id, product]));
   const featuredProductIds = featuredProducts.map((item) => item.product_id);
+  const featuredItems = featuredProducts.map((featured) => {
+    const product = featuredProductsById.get(featured.product_id) ?? null;
+
+    return {
+      featuredId: featured.id,
+      productId: featured.product_id,
+      productName: product?.nome ?? "Produto removido",
+      categoryName: product ? getProductCategoryName(product) : "Produto indisponível",
+      imageUrl: product?.image_url ?? null,
+      isMissing: !product,
+    };
+  });
 
   return (
     <section className="mx-auto flex max-w-[1400px] flex-col gap-8 pb-12 px-4 sm:px-6 lg:px-8">
@@ -386,7 +397,7 @@ export default async function AdminProductsPage({
               <div className="mb-6 border-b border-brand-dark/5 pb-6">
                 <h2 className="text-2xl font-bold text-brand-dark font-heading">Tabela de Produtos em Destaque</h2>
                 <p className="mt-2 text-sm text-brand-dark/60">
-                  A ordem define como os cards aparecem no carrossel da home.
+                  Arraste os itens para reordenar como serão exibidos no carrossel da home.
                 </p>
               </div>
 
@@ -395,57 +406,7 @@ export default async function AdminProductsPage({
                   Nenhum produto em destaque ainda.
                 </div>
               ) : (
-                <div className="overflow-x-auto">
-                  <table className="min-w-full border-separate border-spacing-y-3">
-                    <thead>
-                      <tr className="text-left text-xs font-black uppercase tracking-wider text-brand-dark/45">
-                        <th className="px-4 py-2">Produto</th>
-                        <th className="px-4 py-2">Ordem</th>
-                        <th className="px-4 py-2">Ações</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {featuredProducts.map((featured) => {
-                        const product = featuredProductsById.get(featured.product_id) ?? null;
-
-                        return (
-                          <tr key={featured.id} className="rounded-2xl bg-brand-light/30">
-                            <td className="px-4 py-3">
-                              {product ? (
-                                <div className="flex items-center gap-3">
-                                  <div className="relative h-14 w-14 overflow-hidden rounded-xl border border-brand-dark/10 bg-white">
-                                    <Image src={product.image_url} alt={product.nome} fill className="object-cover" />
-                                  </div>
-                                  <div className="min-w-0">
-                                    <p className="truncate text-sm font-bold text-brand-dark">
-                                      #{product.id} - {product.nome}
-                                    </p>
-                                    <p className="truncate text-xs font-medium text-brand-dark/55">
-                                      {getProductCategoryName(product)}
-                                    </p>
-                                  </div>
-                                </div>
-                              ) : (
-                                <span className="text-sm font-semibold text-brand-dark/50">
-                                  Produto removido (ID {featured.product_id})
-                                </span>
-                              )}
-                            </td>
-                            <td className="px-4 py-3">
-                              <UpdateFeaturedOrderForm
-                                featuredId={featured.id}
-                                currentOrder={featured.display_order}
-                              />
-                            </td>
-                            <td className="px-4 py-3">
-                              <DeleteFeaturedProductButton featuredId={featured.id} />
-                            </td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                </div>
+                <FeaturedProductsReorderForm items={featuredItems} />
               )}
             </div>
           </div>

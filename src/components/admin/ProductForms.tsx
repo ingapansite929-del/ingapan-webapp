@@ -1,6 +1,7 @@
 "use client";
 
-import { useTransition, useRef } from "react";
+import Image from "next/image";
+import { useTransition, useRef, useEffect, useState } from "react";
 import { useToast } from "@/components/Toast";
 import CategorySelector from "@/components/admin/CategorySelector";
 import { Loader2 } from "lucide-react";
@@ -9,7 +10,7 @@ import {
   updateProductAction,
   deleteProductAction,
   createFeaturedProductAction,
-  updateFeaturedProductOrderAction,
+  reorderFeaturedProductsAction,
   deleteFeaturedProductAction,
 } from "@/app/admin/products/actions";
 
@@ -45,7 +46,7 @@ export function CreateProductForm({ categories }: CreateProductFormProps) {
         } else {
           addToast(result.message, "error");
         }
-      } catch (error) {
+      } catch {
         addToast("Erro inesperado ao criar produto", "error");
       }
     });
@@ -137,7 +138,7 @@ export function UpdateProductForm({ product, categories }: UpdateProductFormProp
         } else {
           addToast(result.message, "error");
         }
-      } catch (error) {
+      } catch {
         addToast("Erro inesperado ao atualizar produto", "error");
       }
     });
@@ -241,7 +242,7 @@ export function DeleteProductButton({ productId }: DeleteProductButtonProps) {
         } else {
           addToast(result.message, "error");
         }
-      } catch (error) {
+      } catch {
         addToast("Erro inesperado ao excluir produto", "error");
       }
     });
@@ -273,6 +274,8 @@ interface CreateFeaturedProductFormProps {
   featuredProductIds: number[];
 }
 
+const MAX_FEATURED_PRODUCTS = 10;
+
 export function CreateFeaturedProductForm({
   products,
   featuredProductIds,
@@ -282,6 +285,7 @@ export function CreateFeaturedProductForm({
   const formRef = useRef<HTMLFormElement>(null);
   const featuredSet = new Set(featuredProductIds);
   const availableProducts = products.filter((product) => !featuredSet.has(product.id));
+  const isLimitReached = featuredProductIds.length >= MAX_FEATURED_PRODUCTS;
 
   async function handleSubmit(formData: FormData) {
     startTransition(async () => {
@@ -309,12 +313,16 @@ export function CreateFeaturedProductForm({
           id="product_id"
           name="product_id"
           required
-          disabled={availableProducts.length === 0 || isPending}
+          disabled={availableProducts.length === 0 || isPending || isLimitReached}
           className="w-full rounded-xl border-2 border-brand-dark/10 bg-brand-light/20 px-4 py-3 text-sm text-brand-dark outline-none transition-all hover:border-brand-dark/30 focus:border-brand-red focus:bg-white focus:shadow-[0_0_0_4px_rgba(239,68,68,0.1)] disabled:cursor-not-allowed disabled:opacity-60"
           defaultValue=""
         >
           <option value="" disabled>
-            {availableProducts.length === 0 ? "Todos os produtos já estão em destaque" : "Selecione um produto"}
+            {isLimitReached
+              ? "Limite de 10 destaques atingido"
+              : availableProducts.length === 0
+                ? "Todos os produtos já estão em destaque"
+                : "Selecione um produto"}
           </option>
           {availableProducts.map((product) => (
             <option key={product.id} value={product.id}>
@@ -324,25 +332,13 @@ export function CreateFeaturedProductForm({
         </select>
       </div>
 
-      <div className="space-y-1.5 focus-within:text-brand-red text-brand-dark transition-colors">
-        <label htmlFor="display_order" className="text-sm font-bold uppercase tracking-wide">
-          Ordem de Exibição
-        </label>
-        <input
-          id="display_order"
-          name="display_order"
-          type="number"
-          min={1}
-          defaultValue={1}
-          required
-          disabled={availableProducts.length === 0 || isPending}
-          className="w-full rounded-xl border-2 border-brand-dark/10 bg-brand-light/20 px-4 py-3 text-sm text-brand-dark outline-none transition-all placeholder:text-brand-dark/30 hover:border-brand-dark/30 focus:border-brand-red focus:bg-white focus:shadow-[0_0_0_4px_rgba(239,68,68,0.1)] disabled:cursor-not-allowed disabled:opacity-60"
-        />
+      <div className="rounded-xl border border-brand-dark/10 bg-brand-light/40 px-4 py-3 text-xs font-medium text-brand-dark/70">
+        Novos destaques entram automaticamente na primeira posição do carrossel.
       </div>
 
       <button
         type="submit"
-        disabled={isPending || availableProducts.length === 0}
+        disabled={isPending || availableProducts.length === 0 || isLimitReached}
         className="mt-4 w-full flex items-center justify-center gap-2 rounded-xl bg-brand-red px-4 py-4 text-sm font-bold text-white shadow-[0_4px_14px_0_rgba(239,68,68,0.39)] transition-all hover:translate-y-[-2px] hover:bg-brand-red/90 hover:shadow-[0_6px_20px_rgba(239,68,68,0.23)] focus:outline-none focus:ring-4 focus:ring-brand-red/20 disabled:pointer-events-none disabled:opacity-70"
       >
         {isPending ? (
@@ -351,29 +347,73 @@ export function CreateFeaturedProductForm({
             Adicionando...
           </>
         ) : (
-          "Adicionar aos Destaques"
+          isLimitReached ? "Limite de 10 atingido" : "Adicionar aos Destaques"
         )}
       </button>
+
+      {isLimitReached ? (
+        <p className="text-xs font-semibold text-brand-red">
+          Você atingiu o limite de 10 produtos em destaque. Remova um item para incluir outro.
+        </p>
+      ) : null}
     </form>
   );
 }
 
-interface UpdateFeaturedOrderFormProps {
+interface FeaturedProductsReorderFormItem {
   featuredId: number;
-  currentOrder: number;
+  productId: number;
+  productName: string;
+  categoryName: string;
+  imageUrl: string | null;
+  isMissing: boolean;
 }
 
-export function UpdateFeaturedOrderForm({
-  featuredId,
-  currentOrder,
-}: UpdateFeaturedOrderFormProps) {
-  const { addToast } = useToast();
-  const [isPending, startTransition] = useTransition();
+interface FeaturedProductsReorderFormProps {
+  items: FeaturedProductsReorderFormItem[];
+}
 
-  async function handleSubmit(formData: FormData) {
+export function FeaturedProductsReorderForm({ items }: FeaturedProductsReorderFormProps) {
+  const { addToast } = useToast();
+  const [orderedItems, setOrderedItems] = useState(items);
+  const [draggedId, setDraggedId] = useState<number | null>(null);
+  const [isPending, startTransition] = useTransition();
+  const originalOrderKey = items.map((item) => item.featuredId).join(",");
+  const currentOrderKey = orderedItems.map((item) => item.featuredId).join(",");
+  const hasChanges = originalOrderKey !== currentOrderKey;
+
+  useEffect(() => {
+    setOrderedItems(items);
+  }, [items]);
+
+  function moveItemToTarget(draggedFeaturedId: number, targetFeaturedId: number) {
+    if (draggedFeaturedId === targetFeaturedId) {
+      return;
+    }
+
+    setOrderedItems((current) => {
+      const draggedIndex = current.findIndex((item) => item.featuredId === draggedFeaturedId);
+      const targetIndex = current.findIndex((item) => item.featuredId === targetFeaturedId);
+      if (draggedIndex < 0 || targetIndex < 0) {
+        return current;
+      }
+
+      const updated = [...current];
+      const [draggedItem] = updated.splice(draggedIndex, 1);
+      updated.splice(targetIndex, 0, draggedItem);
+      return updated;
+    });
+  }
+
+  async function handleSaveOrder() {
     startTransition(async () => {
       try {
-        const result = await updateFeaturedProductOrderAction(formData);
+        const formData = new FormData();
+        formData.set(
+          "ordered_ids",
+          JSON.stringify(orderedItems.map((item) => item.featuredId))
+        );
+        const result = await reorderFeaturedProductsAction(formData);
         if (result.success) {
           addToast(result.message, "success");
         } else {
@@ -386,24 +426,74 @@ export function UpdateFeaturedOrderForm({
   }
 
   return (
-    <form action={handleSubmit} className="flex items-center gap-2">
-      <input type="hidden" name="id" value={featuredId} />
-      <input
-        name="display_order"
-        type="number"
-        min={1}
-        required
-        defaultValue={currentOrder}
-        className="w-24 rounded-lg border border-brand-dark/15 bg-white px-3 py-2 text-sm font-semibold text-brand-dark outline-none transition-all focus:border-brand-orange focus:ring-4 focus:ring-brand-orange/15"
-      />
+    <div className="space-y-4">
+      <div className="rounded-xl border border-brand-dark/10 bg-brand-light/35 px-4 py-3 text-xs text-brand-dark/70">
+        Arraste e solte para reordenar os produtos. O primeiro item aparece primeiro no carrossel.
+      </div>
+
+      <ul className="space-y-3">
+        {orderedItems.map((item, index) => (
+          <li
+            key={item.featuredId}
+            draggable
+            onDragStart={() => setDraggedId(item.featuredId)}
+            onDragOver={(event) => event.preventDefault()}
+            onDrop={() => {
+              if (draggedId !== null) {
+                moveItemToTarget(draggedId, item.featuredId);
+                setDraggedId(null);
+              }
+            }}
+            onDragEnd={() => setDraggedId(null)}
+            className="rounded-2xl bg-brand-light/30 p-4"
+          >
+            <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-white text-xs font-black text-brand-dark/60">
+                  {index + 1}
+                </div>
+                <div className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-brand-dark/10 bg-white text-brand-dark/40">
+                  <span className="text-base leading-none">::</span>
+                </div>
+                {item.imageUrl ? (
+                  <div className="relative h-14 w-14 overflow-hidden rounded-xl border border-brand-dark/10 bg-white">
+                    <Image src={item.imageUrl} alt={item.productName} fill className="object-cover" />
+                  </div>
+                ) : (
+                  <div className="flex h-14 w-14 items-center justify-center rounded-xl border border-dashed border-brand-dark/20 bg-white text-[10px] font-bold uppercase text-brand-dark/40">
+                    Sem imagem
+                  </div>
+                )}
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-bold text-brand-dark">
+                    #{item.productId} - {item.productName}
+                  </p>
+                  <p className="truncate text-xs font-medium text-brand-dark/55">
+                    {item.categoryName}
+                  </p>
+                  {item.isMissing ? (
+                    <p className="mt-1 text-xs font-semibold text-brand-red">
+                      Produto removido do catálogo.
+                    </p>
+                  ) : null}
+                </div>
+              </div>
+
+              <DeleteFeaturedProductButton featuredId={item.featuredId} />
+            </div>
+          </li>
+        ))}
+      </ul>
+
       <button
-        type="submit"
-        disabled={isPending}
-        className="rounded-lg bg-brand-dark px-3 py-2 text-xs font-bold uppercase tracking-wide text-white transition hover:bg-brand-dark/90 disabled:opacity-60"
+        type="button"
+        onClick={handleSaveOrder}
+        disabled={isPending || !hasChanges}
+        className="w-full rounded-xl bg-brand-dark px-4 py-3 text-sm font-bold text-white transition hover:bg-brand-dark/90 disabled:opacity-60"
       >
-        {isPending ? "..." : "Salvar"}
+        {isPending ? "Salvando..." : hasChanges ? "Salvar nova ordem" : "Ordem atual salva"}
       </button>
-    </form>
+    </div>
   );
 }
 

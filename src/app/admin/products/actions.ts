@@ -5,6 +5,7 @@ import { requireAdminAccess } from "@/lib/auth/admin";
 
 const ADMIN_PRODUCTS_PATH = "/admin/products";
 const HOME_PATH = "/";
+const MAX_FEATURED_PRODUCTS = 10;
 
 type ProductInput = {
   id?: number;
@@ -67,6 +68,33 @@ function parseDisplayOrder(value: FormDataEntryValue | null): number | null {
   }
 
   return parsed;
+}
+
+function parseFeaturedOrderIds(value: FormDataEntryValue | null): number[] | null {
+  if (typeof value !== "string") {
+    return null;
+  }
+
+  try {
+    const parsed = JSON.parse(value);
+    if (!Array.isArray(parsed) || parsed.length === 0) {
+      return null;
+    }
+
+    const ids = parsed.map((item) => Number(item));
+    const allValid = ids.every((id) => Number.isInteger(id) && id > 0);
+    if (!allValid) {
+      return null;
+    }
+
+    if (new Set(ids).size !== ids.length) {
+      return null;
+    }
+
+    return ids;
+  } catch {
+    return null;
+  }
 }
 
 function parseProductInput(formData: FormData, includeId = false): {
@@ -273,14 +301,9 @@ export async function createFeaturedProductAction(formData: FormData) {
   });
 
   const productId = parseId(formData.get("product_id"));
-  const displayOrder = parseDisplayOrder(formData.get("display_order"));
 
   if (!productId) {
     return { success: false, message: "Produto inválido para destaque." };
-  }
-
-  if (!displayOrder) {
-    return { success: false, message: "Ordem de exibição inválida." };
   }
 
   const { data: existingProduct, error: productError } = await supabase
@@ -293,24 +316,126 @@ export async function createFeaturedProductAction(formData: FormData) {
     return { success: false, message: "Produto não encontrado." };
   }
 
-  const { error: insertError } = await supabase
+  const { data: currentFeaturedRows, error: currentFeaturedError } = await supabase
+    .from("products_featured")
+    .select("id")
+    .order("display_order", { ascending: true })
+    .order("id", { ascending: true });
+
+  if (currentFeaturedError) {
+    return { success: false, message: "Não foi possível carregar os destaques atuais." };
+  }
+
+  const currentFeatured = (currentFeaturedRows ?? []) as { id: number }[];
+  if (currentFeatured.length >= MAX_FEATURED_PRODUCTS) {
+    return {
+      success: false,
+      message:
+        "Limite de 10 produtos em destaque atingido. Remova um item antes de adicionar outro.",
+    };
+  }
+
+  const { data: insertedFeatured, error: insertError } = await supabase
     .from("products_featured")
     .insert({
       product_id: productId,
-      display_order: displayOrder,
-    });
+      display_order: 1,
+    })
+    .select("id")
+    .single();
 
   if (insertError?.code === "23505") {
     return { success: false, message: "Esse produto já está em destaque." };
   }
 
-  if (insertError) {
+  if (insertError?.code === "23514") {
+    return {
+      success: false,
+      message:
+        "Limite de 10 produtos em destaque atingido. Remova um item antes de adicionar outro.",
+    };
+  }
+
+  if (insertError || !insertedFeatured) {
     return { success: false, message: "Não foi possível destacar o produto." };
+  }
+
+  const orderedFeaturedIds = [insertedFeatured.id, ...currentFeatured.map((item) => item.id)];
+
+  for (const [index, featuredId] of orderedFeaturedIds.entries()) {
+    const { error: updateError } = await supabase
+      .from("products_featured")
+      .update({ display_order: index + 1 })
+      .eq("id", featuredId);
+
+    if (updateError) {
+      return { success: false, message: "Não foi possível ajustar a ordem dos destaques." };
+    }
   }
 
   revalidatePath(ADMIN_PRODUCTS_PATH);
   revalidatePath(HOME_PATH);
-  return { success: true, message: "Produto adicionado aos destaques!" };
+  return {
+    success: true,
+    message: "Produto adicionado aos destaques na primeira posição!",
+  };
+}
+
+export async function reorderFeaturedProductsAction(formData: FormData) {
+  const { supabase } = await requireAdminAccess({
+    forbiddenRedirectPath:
+      "/admin/products?error=" +
+      encodeURIComponent("Acesso negado ao painel admin."),
+  });
+
+  const orderedIds = parseFeaturedOrderIds(formData.get("ordered_ids"));
+  if (!orderedIds) {
+    return { success: false, message: "Ordem de destaque inválida." };
+  }
+
+  if (orderedIds.length > MAX_FEATURED_PRODUCTS) {
+    return { success: false, message: "A lista de destaque não pode ultrapassar 10 itens." };
+  }
+
+  const { data: currentFeaturedRows, error: currentFeaturedError } = await supabase
+    .from("products_featured")
+    .select("id");
+
+  if (currentFeaturedError) {
+    return { success: false, message: "Não foi possível validar os destaques." };
+  }
+
+  const currentIds = (currentFeaturedRows ?? []).map((item) => Number(item.id));
+  if (currentIds.length !== orderedIds.length) {
+    return {
+      success: false,
+      message: "A lista de destaques mudou. Atualize a página e tente novamente.",
+    };
+  }
+
+  const currentIdSet = new Set(currentIds);
+  const hasUnknownId = orderedIds.some((id) => !currentIdSet.has(id));
+  if (hasUnknownId) {
+    return {
+      success: false,
+      message: "A lista de destaques mudou. Atualize a página e tente novamente.",
+    };
+  }
+
+  for (const [index, featuredId] of orderedIds.entries()) {
+    const { error: updateError } = await supabase
+      .from("products_featured")
+      .update({ display_order: index + 1 })
+      .eq("id", featuredId);
+
+    if (updateError) {
+      return { success: false, message: "Não foi possível salvar a nova ordem." };
+    }
+  }
+
+  revalidatePath(ADMIN_PRODUCTS_PATH);
+  revalidatePath(HOME_PATH);
+  return { success: true, message: "Ordem de destaque atualizada!" };
 }
 
 export async function updateFeaturedProductOrderAction(formData: FormData) {
@@ -364,6 +489,28 @@ export async function deleteFeaturedProductAction(formData: FormData) {
 
   if (deleteError) {
     return { success: false, message: "Não foi possível remover o destaque." };
+  }
+
+  const { data: remainingFeaturedRows, error: remainingFeaturedError } = await supabase
+    .from("products_featured")
+    .select("id")
+    .order("display_order", { ascending: true })
+    .order("id", { ascending: true });
+
+  if (remainingFeaturedError) {
+    return { success: false, message: "Não foi possível normalizar a ordem dos destaques." };
+  }
+
+  const remainingFeatured = (remainingFeaturedRows ?? []) as { id: number }[];
+  for (const [index, item] of remainingFeatured.entries()) {
+    const { error: updateError } = await supabase
+      .from("products_featured")
+      .update({ display_order: index + 1 })
+      .eq("id", item.id);
+
+    if (updateError) {
+      return { success: false, message: "Não foi possível normalizar a ordem dos destaques." };
+    }
   }
 
   revalidatePath(ADMIN_PRODUCTS_PATH);
