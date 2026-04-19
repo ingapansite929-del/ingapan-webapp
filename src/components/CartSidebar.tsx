@@ -3,12 +3,15 @@
 import { useCart } from "@/lib/CartContext";
 import { X, Plus, Minus, Trash2, Send } from "lucide-react";
 import Image from "next/image";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { SOCIAL_LINKS } from "@/lib/constants";
+import { useToast } from "@/components/Toast";
 
 export default function CartSidebar() {
   const { items, isOpen, closeCart, updateQuantity, removeItem, itemCount } = useCart();
   const sidebarRef = useRef<HTMLDivElement>(null);
+  const [isSubmittingCheckout, setIsSubmittingCheckout] = useState(false);
+  const { addToast } = useToast();
 
   // Close when clicking outside
   useEffect(() => {
@@ -38,8 +41,8 @@ export default function CartSidebar() {
     };
   }, [isOpen]);
 
-  const handleWhatsAppCheckout = () => {
-    if (items.length === 0) return;
+  const handleWhatsAppCheckout = async () => {
+    if (items.length === 0 || isSubmittingCheckout) return;
 
     // Get WhatsApp number from constants or fallback
     const whatsappLink = SOCIAL_LINKS.find(link => link.name === "WhatsApp")?.url || "https://wa.me/5544999999999";
@@ -54,8 +57,34 @@ export default function CartSidebar() {
     const messageEnd = "\n\nAguardo o retorno com os valores.";
     
     const fullMessage = encodeURIComponent(messageStart + itemsList + messageEnd);
-    
-    window.open(`https://wa.me/${phoneNumber}?text=${fullMessage}`, "_blank");
+    const whatsappUrl = `https://wa.me/${phoneNumber}?text=${fullMessage}`;
+
+    setIsSubmittingCheckout(true);
+    try {
+      const response = await fetch("/api/orders/checkout-whatsapp", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          items: items.map((item) => ({
+            product_id: item.product.id,
+            quantity: item.quantity,
+          })),
+        }),
+      });
+
+      if (!response.ok) {
+        addToast("Não foi possível registrar o pedido. Tente novamente.", "error");
+        return;
+      }
+
+      window.location.assign(whatsappUrl);
+    } catch {
+      addToast("Erro de conexão ao registrar o pedido.", "error");
+    } finally {
+      setIsSubmittingCheckout(false);
+    }
   };
 
   return (
@@ -178,10 +207,13 @@ export default function CartSidebar() {
             
             <button
               onClick={handleWhatsAppCheckout}
-              className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#25D366] px-6 py-4 font-bold text-white transition-all hover:bg-[#20bd5a] hover:shadow-lg hover:shadow-green-900/20 active:scale-[0.98]"
+              disabled={isSubmittingCheckout}
+              className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#25D366] px-6 py-4 font-bold text-white transition-all hover:bg-[#20bd5a] hover:shadow-lg hover:shadow-green-900/20 active:scale-[0.98] disabled:cursor-not-allowed disabled:bg-[#8ad9ac] disabled:shadow-none"
             >
               <Send className="h-5 w-5" />
-              Solicitar Orçamento via WhatsApp
+              {isSubmittingCheckout
+                ? "Registrando pedido..."
+                : "Solicitar Orçamento via WhatsApp"}
             </button>
             <p className="mt-3 text-center text-xs text-gray-500">
               Você será redirecionado para o WhatsApp para confirmar o pedido.
