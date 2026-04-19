@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { ChevronLeft, ChevronRight, Package, ShoppingCart } from "lucide-react";
+import { ChevronLeft, ChevronRight, Eye, Package, ShoppingCart } from "lucide-react";
 import { useCart } from "@/lib/CartContext";
 
 interface Product {
@@ -75,43 +75,54 @@ export default function ProductsGrid({
             key={product.id}
             className="group flex flex-col overflow-hidden rounded-2xl border border-brand-dark/10 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-brand-yellow/50 hover:shadow-xl"
           >
-            {/* Imagem do Produto */}
-            <div className="relative aspect-[4/3] overflow-hidden bg-brand-light">
-              <Image
-                src={product.image_url}
-                alt={product.nome}
-                fill
-                className="object-cover transition-transform duration-500 group-hover:scale-110"
-                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, 25vw"
-              />
-              
-              {/* Badge da Categoria */}
-              {product.product_categoria && (
-                <div className="absolute right-3 top-3">
-                  <span className="inline-block rounded-lg border border-brand-yellow/30 bg-white/95 px-3 py-1 text-xs font-bold uppercase tracking-wider text-brand-dark shadow-lg backdrop-blur-sm">
-                    {Array.isArray(product.product_categoria) 
-                      ? product.product_categoria[0]?.category 
-                      : product.product_categoria.category}
-                  </span>
-                </div>
-              )}
-            </div>
+            <Link href={`/produtos/${product.id}`} className="block">
+              {/* Imagem do Produto */}
+              <div className="relative aspect-[4/3] overflow-hidden bg-brand-light">
+                <Image
+                  src={product.image_url}
+                  alt={product.nome}
+                  fill
+                  className="object-cover transition-transform duration-500 group-hover:scale-110"
+                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, 25vw"
+                />
+                
+                {/* Badge da Categoria */}
+                {product.product_categoria && (
+                  <div className="absolute right-3 top-3">
+                    <span className="inline-block rounded-lg border border-brand-yellow/30 bg-white/95 px-3 py-1 text-xs font-bold uppercase tracking-wider text-brand-dark shadow-lg backdrop-blur-sm">
+                      {Array.isArray(product.product_categoria)
+                        ? product.product_categoria[0]?.category
+                        : product.product_categoria.category}
+                    </span>
+                  </div>
+                )}
+              </div>
 
-            {/* Conteúdo do Card */}
-            <div className="flex flex-1 flex-col p-5">
-              <h3 className="font-[var(--font-heading)] text-lg font-bold text-brand-dark transition-colors group-hover:text-brand-orange line-clamp-2">
-                {product.nome}
-              </h3>
-              
-              <p className="mt-2 flex-1 text-sm leading-relaxed text-brand-dark/60 line-clamp-3">
-                {product.descricao}
-              </p>
+              {/* Conteúdo do Card */}
+              <div className="flex flex-1 flex-col p-5">
+                <h3 className="font-[var(--font-heading)] text-lg font-bold text-brand-dark transition-colors group-hover:text-brand-orange line-clamp-2">
+                  {product.nome}
+                </h3>
+                
+                <p className="mt-2 flex-1 text-sm leading-relaxed text-brand-dark/60 line-clamp-3">
+                  {product.descricao}
+                </p>
+              </div>
+            </Link>
 
-              {/* Ação */}
-              <div className="mt-4 flex items-center justify-between border-t border-brand-dark/5 pt-4">
-                <span className="text-xs font-bold uppercase tracking-wider text-brand-dark/40">
-                  Cód. #{product.id}
-                </span>
+            {/* Ação */}
+            <div className="mt-auto flex items-center justify-between border-t border-brand-dark/5 p-5 pt-4">
+              <span className="text-xs font-bold uppercase tracking-wider text-brand-dark/40">
+                Cód. #{product.id}
+              </span>
+              <div className="flex items-center gap-2">
+                <Link
+                  href={`/produtos/${product.id}`}
+                  className="inline-flex items-center gap-1.5 rounded-lg border border-brand-dark/15 px-3.5 py-2 text-sm font-semibold text-brand-dark transition-all hover:border-brand-red/30 hover:text-brand-red"
+                >
+                  <Eye className="h-4 w-4" />
+                  Detalhes
+                </Link>
                 <button
                   onClick={() => addItem(product)}
                   className="flex items-center gap-1.5 rounded-lg bg-brand-yellow px-4 py-2 text-sm font-bold text-brand-dark transition-all hover:bg-brand-yellow/90 hover:shadow-lg active:scale-95"
