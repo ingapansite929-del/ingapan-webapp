@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { Search, X } from "lucide-react";
 import { useState, useTransition } from "react";
 
@@ -21,7 +21,6 @@ export default function ProductsFilters({
   currentCategoria,
 }: ProductsFiltersProps) {
   const router = useRouter();
-  const searchParams = useSearchParams();
   const [isPending, startTransition] = useTransition();
 
   const [searchTerm, setSearchTerm] = useState(currentNome);

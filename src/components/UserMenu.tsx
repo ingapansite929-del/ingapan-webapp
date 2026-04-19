@@ -3,15 +3,19 @@
 import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { User, LogOut, LayoutDashboard } from "lucide-react";
+import { User as UserIcon, LogOut, LayoutDashboard } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
 interface UserMenuProps {
   isScrolled: boolean;
 }
 
+interface AuthUser {
+  email?: string | null;
+}
+
 export default function UserMenu({ isScrolled }: UserMenuProps) {
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<AuthUser | null>(null);
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -89,7 +93,7 @@ export default function UserMenu({ isScrolled }: UserMenuProps) {
         className={buttonClasses}
         aria-label="Fazer Login"
       >
-        <User className="h-5 w-5 md:h-6 md:w-6" />
+        <UserIcon className="h-5 w-5 md:h-6 md:w-6" />
       </Link>
     );
   }
@@ -102,7 +106,7 @@ export default function UserMenu({ isScrolled }: UserMenuProps) {
         aria-label="Menu do Usuário"
         aria-expanded={isOpen}
       >
-        <User className="h-5 w-5 md:h-6 md:w-6" />
+        <UserIcon className="h-5 w-5 md:h-6 md:w-6" />
       </button>
 
       {isOpen && (

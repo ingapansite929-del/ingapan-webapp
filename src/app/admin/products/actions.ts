@@ -1,10 +1,17 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
 import { requireAdminAccess } from "@/lib/auth/admin";
 
 const ADMIN_PRODUCTS_PATH = "/admin/products";
+const HOME_PATH = "/";
+const MAX_FEATURED_PRODUCTS = 10;
+const FEATURED_SELECTOR_PAGE_SIZE = 15;
+
+export type FeaturedSelectableProduct = {
+  id: number;
+  nome: string;
+};
 
 type ProductInput = {
   id?: number;
@@ -58,6 +65,50 @@ function parseId(value: FormDataEntryValue | null): number | null {
   }
 
   return parsed;
+}
+
+function parseDisplayOrder(value: FormDataEntryValue | null): number | null {
+  const parsed = Number(typeof value === "string" ? value : "");
+  if (!Number.isInteger(parsed) || parsed <= 0) {
+    return null;
+  }
+
+  return parsed;
+}
+
+function sanitizePositiveIntList(values: number[]): number[] {
+  const ids = values
+    .map((value) => Number(value))
+    .filter((value) => Number.isInteger(value) && value > 0);
+
+  return [...new Set(ids)];
+}
+
+function parseFeaturedOrderIds(value: FormDataEntryValue | null): number[] | null {
+  if (typeof value !== "string") {
+    return null;
+  }
+
+  try {
+    const parsed = JSON.parse(value);
+    if (!Array.isArray(parsed) || parsed.length === 0) {
+      return null;
+    }
+
+    const ids = parsed.map((item) => Number(item));
+    const allValid = ids.every((id) => Number.isInteger(id) && id > 0);
+    if (!allValid) {
+      return null;
+    }
+
+    if (new Set(ids).size !== ids.length) {
+      return null;
+    }
+
+    return ids;
+  } catch {
+    return null;
+  }
 }
 
 function parseProductInput(formData: FormData, includeId = false): {
@@ -114,16 +165,6 @@ function parseProductInput(formData: FormData, includeId = false): {
   };
 }
 
-function redirectWithError(errorMessage: string): never {
-  redirect(
-    `${ADMIN_PRODUCTS_PATH}?error=${encodeURIComponent(errorMessage)}`
-  );
-}
-
-function redirectWithStatus(status: string): never {
-  redirect(`${ADMIN_PRODUCTS_PATH}?status=${encodeURIComponent(status)}`);
-}
-
 export async function createProductAction(formData: FormData) {
   const { supabase } = await requireAdminAccess({
     forbiddenRedirectPath:
@@ -149,6 +190,60 @@ export async function createProductAction(formData: FormData) {
 
   revalidatePath(ADMIN_PRODUCTS_PATH);
   return { success: true, message: "Produto criado com sucesso!" };
+}
+
+export async function listFeaturedSelectableProductsAction(input: {
+  page: number;
+  search?: string;
+  excludedProductIds?: number[];
+}) {
+  const { supabase } = await requireAdminAccess({
+    forbiddenRedirectPath:
+      "/admin/products?error=" +
+      encodeURIComponent("Acesso negado ao painel admin."),
+  });
+
+  const page = Number.isInteger(input.page) && input.page > 0 ? input.page : 1;
+  const search = (input.search ?? "").trim();
+
+  if (search.length > 120) {
+    return { success: false, message: "Busca deve ter no máximo 120 caracteres." };
+  }
+
+  const excludedIds = sanitizePositiveIntList(input.excludedProductIds ?? []);
+
+  let query = supabase
+    .from("products")
+    .select("id, nome")
+    .order("nome", { ascending: true })
+    .order("id", { ascending: true });
+
+  if (search) {
+    query = query.ilike("nome", `%${search}%`);
+  }
+
+  if (excludedIds.length > 0) {
+    query = query.not("id", "in", `(${excludedIds.join(",")})`);
+  }
+
+  const from = (page - 1) * FEATURED_SELECTOR_PAGE_SIZE;
+  const to = from + FEATURED_SELECTOR_PAGE_SIZE;
+  const { data, error } = await query.range(from, to);
+
+  if (error) {
+    return { success: false, message: "Não foi possível carregar os produtos para destaque." };
+  }
+
+  const rows = (data ?? []) as FeaturedSelectableProduct[];
+  const hasNextPage = rows.length > FEATURED_SELECTOR_PAGE_SIZE;
+
+  return {
+    success: true,
+    products: hasNextPage ? rows.slice(0, FEATURED_SELECTOR_PAGE_SIZE) : rows,
+    page,
+    hasPreviousPage: page > 1,
+    hasNextPage,
+  };
 }
 
 export async function updateProductAction(formData: FormData) {
@@ -264,4 +359,229 @@ export async function createCategoryJsonAction(categoryName: string) {
 
   revalidatePath(ADMIN_PRODUCTS_PATH);
   return { success: true, category: data };
+}
+
+export async function createFeaturedProductAction(formData: FormData) {
+  const { supabase } = await requireAdminAccess({
+    forbiddenRedirectPath:
+      "/admin/products?error=" +
+      encodeURIComponent("Acesso negado ao painel admin."),
+  });
+
+  const productId = parseId(formData.get("product_id"));
+
+  if (!productId) {
+    return { success: false, message: "Produto inválido para destaque." };
+  }
+
+  const { data: existingProduct, error: productError } = await supabase
+    .from("products")
+    .select("id")
+    .eq("id", productId)
+    .maybeSingle();
+
+  if (productError || !existingProduct) {
+    return { success: false, message: "Produto não encontrado." };
+  }
+
+  const { data: currentFeaturedRows, error: currentFeaturedError } = await supabase
+    .from("products_featured")
+    .select("id")
+    .order("display_order", { ascending: true })
+    .order("id", { ascending: true });
+
+  if (currentFeaturedError) {
+    return { success: false, message: "Não foi possível carregar os destaques atuais." };
+  }
+
+  const currentFeatured = (currentFeaturedRows ?? []) as { id: number }[];
+  if (currentFeatured.length >= MAX_FEATURED_PRODUCTS) {
+    return {
+      success: false,
+      message:
+        "Limite de 10 produtos em destaque atingido. Remova um item antes de adicionar outro.",
+    };
+  }
+
+  const { data: insertedFeatured, error: insertError } = await supabase
+    .from("products_featured")
+    .insert({
+      product_id: productId,
+      display_order: 1,
+    })
+    .select("id")
+    .single();
+
+  if (insertError?.code === "23505") {
+    return { success: false, message: "Esse produto já está em destaque." };
+  }
+
+  if (insertError?.code === "23514") {
+    return {
+      success: false,
+      message:
+        "Limite de 10 produtos em destaque atingido. Remova um item antes de adicionar outro.",
+    };
+  }
+
+  if (insertError || !insertedFeatured) {
+    return { success: false, message: "Não foi possível destacar o produto." };
+  }
+
+  const orderedFeaturedIds = [insertedFeatured.id, ...currentFeatured.map((item) => item.id)];
+
+  for (const [index, featuredId] of orderedFeaturedIds.entries()) {
+    const { error: updateError } = await supabase
+      .from("products_featured")
+      .update({ display_order: index + 1 })
+      .eq("id", featuredId);
+
+    if (updateError) {
+      return { success: false, message: "Não foi possível ajustar a ordem dos destaques." };
+    }
+  }
+
+  revalidatePath(ADMIN_PRODUCTS_PATH);
+  revalidatePath(HOME_PATH);
+  return {
+    success: true,
+    message: "Produto adicionado aos destaques na primeira posição!",
+  };
+}
+
+export async function reorderFeaturedProductsAction(formData: FormData) {
+  const { supabase } = await requireAdminAccess({
+    forbiddenRedirectPath:
+      "/admin/products?error=" +
+      encodeURIComponent("Acesso negado ao painel admin."),
+  });
+
+  const orderedIds = parseFeaturedOrderIds(formData.get("ordered_ids"));
+  if (!orderedIds) {
+    return { success: false, message: "Ordem de destaque inválida." };
+  }
+
+  if (orderedIds.length > MAX_FEATURED_PRODUCTS) {
+    return { success: false, message: "A lista de destaque não pode ultrapassar 10 itens." };
+  }
+
+  const { data: currentFeaturedRows, error: currentFeaturedError } = await supabase
+    .from("products_featured")
+    .select("id");
+
+  if (currentFeaturedError) {
+    return { success: false, message: "Não foi possível validar os destaques." };
+  }
+
+  const currentIds = (currentFeaturedRows ?? []).map((item) => Number(item.id));
+  if (currentIds.length !== orderedIds.length) {
+    return {
+      success: false,
+      message: "A lista de destaques mudou. Atualize a página e tente novamente.",
+    };
+  }
+
+  const currentIdSet = new Set(currentIds);
+  const hasUnknownId = orderedIds.some((id) => !currentIdSet.has(id));
+  if (hasUnknownId) {
+    return {
+      success: false,
+      message: "A lista de destaques mudou. Atualize a página e tente novamente.",
+    };
+  }
+
+  for (const [index, featuredId] of orderedIds.entries()) {
+    const { error: updateError } = await supabase
+      .from("products_featured")
+      .update({ display_order: index + 1 })
+      .eq("id", featuredId);
+
+    if (updateError) {
+      return { success: false, message: "Não foi possível salvar a nova ordem." };
+    }
+  }
+
+  revalidatePath(ADMIN_PRODUCTS_PATH);
+  revalidatePath(HOME_PATH);
+  return { success: true, message: "Ordem de destaque atualizada!" };
+}
+
+export async function updateFeaturedProductOrderAction(formData: FormData) {
+  const { supabase } = await requireAdminAccess({
+    forbiddenRedirectPath:
+      "/admin/products?error=" +
+      encodeURIComponent("Acesso negado ao painel admin."),
+  });
+
+  const featuredId = parseId(formData.get("id"));
+  const displayOrder = parseDisplayOrder(formData.get("display_order"));
+
+  if (!featuredId) {
+    return { success: false, message: "Registro de destaque inválido." };
+  }
+
+  if (!displayOrder) {
+    return { success: false, message: "Ordem de exibição inválida." };
+  }
+
+  const { error: updateError } = await supabase
+    .from("products_featured")
+    .update({ display_order: displayOrder })
+    .eq("id", featuredId);
+
+  if (updateError) {
+    return { success: false, message: "Não foi possível atualizar a ordem." };
+  }
+
+  revalidatePath(ADMIN_PRODUCTS_PATH);
+  revalidatePath(HOME_PATH);
+  return { success: true, message: "Ordem de destaque atualizada!" };
+}
+
+export async function deleteFeaturedProductAction(formData: FormData) {
+  const { supabase } = await requireAdminAccess({
+    forbiddenRedirectPath:
+      "/admin/products?error=" +
+      encodeURIComponent("Acesso negado ao painel admin."),
+  });
+
+  const featuredId = parseId(formData.get("id"));
+  if (!featuredId) {
+    return { success: false, message: "Registro de destaque inválido." };
+  }
+
+  const { error: deleteError } = await supabase
+    .from("products_featured")
+    .delete()
+    .eq("id", featuredId);
+
+  if (deleteError) {
+    return { success: false, message: "Não foi possível remover o destaque." };
+  }
+
+  const { data: remainingFeaturedRows, error: remainingFeaturedError } = await supabase
+    .from("products_featured")
+    .select("id")
+    .order("display_order", { ascending: true })
+    .order("id", { ascending: true });
+
+  if (remainingFeaturedError) {
+    return { success: false, message: "Não foi possível normalizar a ordem dos destaques." };
+  }
+
+  const remainingFeatured = (remainingFeaturedRows ?? []) as { id: number }[];
+  for (const [index, item] of remainingFeatured.entries()) {
+    const { error: updateError } = await supabase
+      .from("products_featured")
+      .update({ display_order: index + 1 })
+      .eq("id", item.id);
+
+    if (updateError) {
+      return { success: false, message: "Não foi possível normalizar a ordem dos destaques." };
+    }
+  }
+
+  revalidatePath(ADMIN_PRODUCTS_PATH);
+  revalidatePath(HOME_PATH);
+  return { success: true, message: "Produto removido dos destaques." };
 }
