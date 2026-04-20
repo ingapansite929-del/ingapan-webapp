@@ -27,6 +27,7 @@ mais o estado atual do banco**. Estao preservados apenas como historico:
 - `006_products_featured_limit.sql`
 - `007_product_stats_views_tracking.sql`
 - `008_client_orders_management.sql`
+- `010_product_sales_stats.sql`
 
 Nao os utilize como fonte de verdade do schema. Sempre consulte
 `009_current_schema_snapshot.sql` ou o proprio Supabase.

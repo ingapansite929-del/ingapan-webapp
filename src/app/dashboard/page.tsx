@@ -1,9 +1,16 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
+import { Suspense } from "react";
 import { createClient } from "@/lib/supabase/server";
 import { isAdminRole } from "@/lib/auth/admin";
 import LogoutButton from "@/components/LogoutButton";
+import TopViewedProductsCard, {
+  TopViewedProductsCardSkeleton,
+} from "@/components/admin/TopViewedProductsCard";
+import TopOrderedProductsCard, {
+  TopOrderedProductsCardSkeleton,
+} from "@/components/admin/TopOrderedProductsCard";
 import { getOrdersByUserId } from "@/features/orders/data";
 import type { OrderSummary } from "@/features/orders/types";
 
@@ -80,52 +87,63 @@ export default async function DashboardPage() {
         </div>
 
         {isAdmin ? (
-          <section className="rounded-xl bg-white p-6 shadow-sm">
-            <h2 className="mb-1 text-xl font-bold font-heading text-brand-dark">
-              Ferramentas de gestão
-            </h2>
-            <p className="mb-6 text-sm text-brand-dark/60">
-              Selecione um módulo para administrar dados e operações.
-            </p>
+          <div className="space-y-6">
+            <section className="grid gap-4 lg:grid-cols-2">
+              <Suspense fallback={<TopViewedProductsCardSkeleton />}>
+                <TopViewedProductsCard />
+              </Suspense>
+              <Suspense fallback={<TopOrderedProductsCardSkeleton />}>
+                <TopOrderedProductsCard />
+              </Suspense>
+            </section>
 
-            <div className="grid gap-4 md:grid-cols-2">
-              <Link
-                href="/admin/products"
-                className="group rounded-xl border border-brand-dark/10 bg-white p-5 transition-all hover:-translate-y-0.5 hover:border-brand-red/30 hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-red/40"
-              >
-                <div className="mb-3 inline-flex rounded-lg bg-brand-red/10 px-2.5 py-1 text-xs font-semibold uppercase tracking-wide text-brand-red">
-                  Módulo ativo
-                </div>
-                <h3 className="text-lg font-semibold text-brand-dark">
-                  Gestão de produtos
-                </h3>
-                <p className="mt-2 text-sm text-brand-dark/70">
-                  Cadastre, edite e organize o catálogo de produtos.
-                </p>
-                <span className="mt-4 inline-flex text-sm font-medium text-brand-red transition-transform group-hover:translate-x-0.5">
-                  Acessar módulo →
-                </span>
-              </Link>
+            <section className="rounded-xl bg-white p-6 shadow-sm">
+              <h2 className="mb-1 text-xl font-bold font-heading text-brand-dark">
+                Ferramentas de gestão
+              </h2>
+              <p className="mb-6 text-sm text-brand-dark/60">
+                Selecione um módulo para administrar dados e operações.
+              </p>
 
-              <Link
-                href="/admin/clientes"
-                className="group rounded-xl border border-brand-dark/10 bg-white p-5 transition-all hover:-translate-y-0.5 hover:border-brand-red/30 hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-red/40"
-              >
-                <div className="mb-3 inline-flex rounded-lg bg-brand-red/10 px-2.5 py-1 text-xs font-semibold uppercase tracking-wide text-brand-red">
-                  Módulo ativo
-                </div>
-                <h3 className="text-lg font-semibold text-brand-dark">
-                  Gestão de clientes
-                </h3>
-                <p className="mt-2 text-sm text-brand-dark/70">
-                  Acompanhe pedidos recebidos via WhatsApp e dados dos clientes.
-                </p>
-                <span className="mt-4 inline-flex text-sm font-medium text-brand-red transition-transform group-hover:translate-x-0.5">
-                  Acessar módulo →
-                </span>
-              </Link>
-            </div>
-          </section>
+              <div className="grid gap-4 md:grid-cols-2">
+                <Link
+                  href="/admin/products"
+                  className="group rounded-xl border border-brand-dark/10 bg-white p-5 transition-all hover:-translate-y-0.5 hover:border-brand-red/30 hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-red/40"
+                >
+                  <div className="mb-3 inline-flex rounded-lg bg-brand-red/10 px-2.5 py-1 text-xs font-semibold uppercase tracking-wide text-brand-red">
+                    Módulo ativo
+                  </div>
+                  <h3 className="text-lg font-semibold text-brand-dark">
+                    Gestão de produtos
+                  </h3>
+                  <p className="mt-2 text-sm text-brand-dark/70">
+                    Cadastre, edite e organize o catálogo de produtos.
+                  </p>
+                  <span className="mt-4 inline-flex text-sm font-medium text-brand-red transition-transform group-hover:translate-x-0.5">
+                    Acessar módulo →
+                  </span>
+                </Link>
+
+                <Link
+                  href="/admin/clientes"
+                  className="group rounded-xl border border-brand-dark/10 bg-white p-5 transition-all hover:-translate-y-0.5 hover:border-brand-red/30 hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-red/40"
+                >
+                  <div className="mb-3 inline-flex rounded-lg bg-brand-red/10 px-2.5 py-1 text-xs font-semibold uppercase tracking-wide text-brand-red">
+                    Módulo ativo
+                  </div>
+                  <h3 className="text-lg font-semibold text-brand-dark">
+                    Gestão de clientes
+                  </h3>
+                  <p className="mt-2 text-sm text-brand-dark/70">
+                    Acompanhe pedidos recebidos via WhatsApp e dados dos clientes.
+                  </p>
+                  <span className="mt-4 inline-flex text-sm font-medium text-brand-red transition-transform group-hover:translate-x-0.5">
+                    Acessar módulo →
+                  </span>
+                </Link>
+              </div>
+            </section>
+          </div>
         ) : (
           <div className="space-y-6">
             <div className="bg-white rounded-xl shadow-sm p-6">
