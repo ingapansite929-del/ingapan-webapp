@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { revalidateTag } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 
 const SESSION_COOKIE_NAME = "ingapan_session_id";
@@ -93,6 +94,8 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     );
   }
+
+  revalidateTag("product-metrics-ordered", "max");
 
   const response = NextResponse.json({ success: true, orderId: data ?? null });
 
