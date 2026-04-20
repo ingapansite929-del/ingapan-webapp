@@ -68,7 +68,7 @@ export default function ProductsFilters({
   const hasActiveFilters = currentNome || currentCategoria;
 
   return (
-    <div className="mb-8 rounded-2xl border border-brand-dark/10 bg-white p-6 shadow-sm">
+    <div className="mb-8 rounded-[1.5rem] border border-brand-dark/10 bg-white/95 p-6 shadow-[0_22px_42px_-34px_rgba(34,34,34,0.7)] backdrop-blur-sm">
       <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:gap-4">
         
         {/* Busca por Nome */}
@@ -84,7 +84,7 @@ export default function ProductsFilters({
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="Digite o nome do produto..."
-              className="w-full rounded-xl border border-brand-dark/20 bg-white py-3 pl-12 pr-4 text-brand-dark placeholder:text-brand-dark/40 focus:border-brand-yellow focus:outline-none focus:ring-2 focus:ring-brand-yellow/20"
+              className="w-full rounded-xl border border-brand-dark/20 bg-white py-3 pl-12 pr-4 text-brand-dark placeholder:text-brand-dark/40 transition-colors focus:border-brand-yellow focus:outline-none focus:ring-2 focus:ring-brand-yellow/20"
             />
           </div>
         </form>
@@ -98,7 +98,7 @@ export default function ProductsFilters({
             id="categoria"
             value={currentCategoria}
             onChange={(e) => handleCategoryChange(e.target.value)}
-            className="w-full rounded-xl border border-brand-dark/20 bg-white py-3 px-4 text-brand-dark focus:border-brand-yellow focus:outline-none focus:ring-2 focus:ring-brand-yellow/20"
+            className="w-full rounded-xl border border-brand-dark/20 bg-white px-4 py-3 text-brand-dark transition-colors focus:border-brand-yellow focus:outline-none focus:ring-2 focus:ring-brand-yellow/20"
           >
             <option value="">Todas as Categorias</option>
             {categories.map((cat) => (
@@ -115,7 +115,7 @@ export default function ProductsFilters({
             type="submit"
             onClick={handleSearch}
             disabled={isPending}
-            className="flex items-center gap-2 rounded-xl bg-brand-yellow px-6 py-3 font-semibold text-brand-dark transition-all hover:bg-brand-yellow/90 hover:shadow-lg disabled:opacity-50"
+            className="flex items-center gap-2 rounded-xl bg-brand-yellow px-6 py-3 font-semibold text-brand-dark transition-all hover:-translate-y-0.5 hover:bg-brand-yellow/90 hover:shadow-[0_16px_30px_-20px_rgba(249,207,0,0.8)] active:translate-y-px disabled:opacity-50"
           >
             <Search className="h-5 w-5" />
             <span className="hidden sm:inline">Buscar</span>
@@ -123,11 +123,11 @@ export default function ProductsFilters({
 
           {hasActiveFilters && (
             <button
-              type="button"
-              onClick={clearFilters}
-              disabled={isPending}
-              className="flex items-center gap-2 rounded-xl border-2 border-brand-dark/20 bg-white px-6 py-3 font-semibold text-brand-dark transition-all hover:border-brand-red hover:bg-brand-red/5 hover:text-brand-red disabled:opacity-50"
-            >
+                type="button"
+                onClick={clearFilters}
+                disabled={isPending}
+                className="flex items-center gap-2 rounded-xl border-2 border-brand-dark/20 bg-white px-6 py-3 font-semibold text-brand-dark transition-all hover:-translate-y-0.5 hover:border-brand-red hover:bg-brand-red/5 hover:text-brand-red active:translate-y-px disabled:opacity-50"
+              >
               <X className="h-5 w-5" />
               <span className="hidden sm:inline">Limpar</span>
             </button>

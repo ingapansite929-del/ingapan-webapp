@@ -74,7 +74,7 @@ export default async function Home() {
   return (
     <>
       <Header />
-      <main>
+      <main id="conteudo-principal">
         <Hero />
         <AboutSection />
         <ProductCarousel products={carouselProducts} />

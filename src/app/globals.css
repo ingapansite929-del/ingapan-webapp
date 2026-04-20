@@ -17,6 +17,10 @@
   --animate-fade-in-up: fade-in-up 0.8s ease-out forwards;
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 @keyframes bounce-slow {
   0%, 100% {
     transform: translateY(0);
@@ -38,9 +42,28 @@
 }
 
 body {
-  background: #ffffff;
+  background:
+    radial-gradient(1100px 550px at -8% -8%, rgb(249 207 0 / 0.1), transparent 60%),
+    radial-gradient(900px 500px at 105% 12%, rgb(186 37 30 / 0.09), transparent 60%),
+    #ffffff;
   color: #222222;
   font-family: var(--font-sans), system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+h1,
+h2,
+h3 {
+  text-wrap: balance;
+}
+
+p {
+  text-wrap: pretty;
+}
+
+:focus-visible {
+  outline: 3px solid rgb(249 207 0 / 0.8);
+  outline-offset: 2px;
 }

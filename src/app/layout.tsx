@@ -1,18 +1,20 @@
 import type { Metadata } from "next";
-import { Inter, Montserrat } from "next/font/google";
+import { Montserrat, Outfit } from "next/font/google";
 import "./globals.css";
 import { CartProvider } from "@/lib/CartContext";
 import CartSidebar from "@/components/CartSidebar";
 import { ToastProvider } from "@/components/Toast";
 
-const inter = Inter({
+const outfit = Outfit({
   variable: "--font-inter",
   subsets: ["latin"],
+  display: "swap",
 });
 
 const montserrat = Montserrat({
   variable: "--font-montserrat",
   subsets: ["latin"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -35,8 +37,14 @@ export default function RootLayout({
   return (
     <html lang="pt-BR">
       <body
-        className={`${inter.variable} ${montserrat.variable} antialiased`}
+        className={`${outfit.variable} ${montserrat.variable} antialiased`}
       >
+        <a
+          href="#conteudo-principal"
+          className="sr-only z-[70] rounded-md bg-brand-yellow px-4 py-2 font-semibold text-brand-dark focus:not-sr-only focus:fixed focus:left-4 focus:top-4"
+        >
+          Ir para o conteúdo principal
+        </a>
         <ToastProvider>
           <CartProvider>
             {children}

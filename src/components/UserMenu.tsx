@@ -72,7 +72,7 @@ export default function UserMenu({ isScrolled }: UserMenuProps) {
     setIsOpen(!isOpen);
   };
 
-  const buttonClasses = `rounded-full p-2 transition-all duration-200 hover:scale-105 md:p-2.5 ${
+  const buttonClasses = `rounded-full p-2 transition-all duration-200 active:scale-[0.97] md:p-2.5 ${
     isScrolled
       ? "bg-brand-dark/10 text-brand-dark hover:bg-brand-dark/20"
       : "bg-white/20 text-white hover:bg-white/30"
@@ -110,7 +110,7 @@ export default function UserMenu({ isScrolled }: UserMenuProps) {
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-48 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none animate-in fade-in zoom-in-95 duration-200">
+        <div className="animate-in fade-in zoom-in-95 absolute right-0 mt-2 w-52 origin-top-right rounded-xl bg-white py-1 shadow-[0_22px_38px_-30px_rgba(34,34,34,0.75)] ring-1 ring-black/5 duration-200 focus:outline-none">
           <div className="px-4 py-2 border-b border-gray-100">
             <p className="text-xs text-gray-500 truncate">Logado como</p>
             <p className="text-sm font-medium text-gray-900 truncate">

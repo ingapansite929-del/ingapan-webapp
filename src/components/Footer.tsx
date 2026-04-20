@@ -18,8 +18,8 @@ const socialIcons: Record<string, React.ReactNode> = {
 
 export default function Footer() {
   return (
-    <footer id="contato" className="bg-brand-dark pt-16 pb-8 text-white">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+    <footer id="contato" className="bg-brand-dark pt-20 pb-10 text-white">
+      <div className="mx-auto max-w-[90rem] px-4 sm:px-6 lg:px-10">
         <div className="grid gap-12 md:grid-cols-2 lg:grid-cols-3">
           {/* Brand */}
           <ScrollReveal>
@@ -31,7 +31,7 @@ export default function Footer() {
                 height={133}
                 className="h-auto w-48"
               />
-              <p className="mt-4 max-w-xs text-sm leading-relaxed text-gray-400">
+              <p className="mt-4 max-w-xs text-sm leading-relaxed text-gray-300">
                 Distribuidora de produtos alimentícios. Qualidade, variedade
                 e confiança para abastecer seu negócio com os melhores
                 produtos do mercado.
@@ -82,7 +82,7 @@ export default function Footer() {
                     target="_blank"
                     rel="noopener noreferrer"
                     aria-label={link.name}
-                    className="flex h-10 w-10 items-center justify-center rounded-full border border-gray-600 text-gray-300 transition-all duration-200 hover:border-brand-yellow hover:bg-brand-yellow hover:text-brand-dark"
+                    className="flex h-10 w-10 items-center justify-center rounded-full border border-gray-600 text-gray-300 transition-all duration-200 hover:-translate-y-0.5 hover:border-brand-yellow hover:bg-brand-yellow hover:text-brand-dark active:translate-y-px"
                   >
                     {socialIcons[link.icon]}
                   </a>

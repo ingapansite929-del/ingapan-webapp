@@ -29,36 +29,42 @@ export default function AboutSection() {
   ];
 
   return (
-    <section id="sobre" className="relative overflow-hidden py-16 md:py-24">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="grid gap-12 lg:grid-cols-2 lg:gap-8 lg:items-center">
+    <section id="sobre" className="relative overflow-hidden py-20 md:py-28">
+      <div className="mx-auto max-w-[90rem] px-4 sm:px-6 lg:px-10">
+        <div className="grid items-center gap-12 lg:grid-cols-[1.05fr_0.95fr] lg:gap-12">
           {/* Text Content */}
           <div className="order-2 lg:order-1">
             <ScrollReveal>
-              <h2 className="font-[var(--font-heading)] text-3xl font-bold leading-tight text-brand-dark md:text-4xl lg:text-5xl">
+              <p className="text-sm font-medium tracking-[0.16em] text-brand-red uppercase">
+                Sobre a Ingapan
+              </p>
+              <h2 className="mt-3 font-[var(--font-heading)] text-3xl leading-[1.03] font-bold tracking-[-0.02em] text-brand-dark md:text-4xl lg:text-5xl">
                 Levando qualidade para o seu negócio
               </h2>
-              <div className="mt-4 h-1 w-20 rounded-full bg-brand-yellow" />
+              <div className="mt-5 h-1 w-20 rounded-full bg-brand-yellow" />
               
-              <p className="mt-6 text-lg text-gray-600 leading-relaxed">
+              <p className="mt-7 max-w-[64ch] text-lg leading-relaxed text-gray-700">
                 A Ingapan é referência na distribuição de alimentos, conectando grandes marcas a estabelecimentos que prezam pela excelência. Nossa missão é garantir que produtos frescos e de alta qualidade cheguem à sua prateleira com agilidade e segurança.
               </p>
               
-              <p className="mt-4 text-lg text-gray-600 leading-relaxed">
+              <p className="mt-5 max-w-[64ch] text-lg leading-relaxed text-gray-700">
                 Com uma infraestrutura moderna e uma equipe apaixonada pelo que faz, atendemos padarias, mercados, restaurantes e comércios em geral, oferecendo um mix variado que atende todas as necessidades do dia a dia.
               </p>
 
-              <div className="mt-10 grid gap-6 sm:grid-cols-2">
+              <div className="mt-11 grid gap-4 sm:grid-cols-2">
                 {features.map((feature, index) => (
-                  <div key={index} className="flex items-start gap-4">
-                    <div className="flex-shrink-0 rounded-lg bg-brand-light p-3 shadow-sm">
+                  <div
+                    key={index}
+                    className="flex items-start gap-4 rounded-2xl bg-white/80 p-4 shadow-[0_16px_30px_-28px_rgba(34,34,34,0.7)] ring-1 ring-brand-dark/5 backdrop-blur-sm"
+                  >
+                    <div className="flex-shrink-0 rounded-xl bg-brand-light p-3">
                       {feature.icon}
                     </div>
                     <div>
                       <h3 className="font-semibold text-brand-dark">
                         {feature.title}
                       </h3>
-                      <p className="mt-1 text-sm text-gray-600">
+                      <p className="mt-1 text-sm leading-relaxed text-gray-600">
                         {feature.description}
                       </p>
                     </div>
@@ -71,9 +77,9 @@ export default function AboutSection() {
           {/* Image Content */}
           <div className="order-1 lg:order-2 relative">
             <ScrollReveal delay={200}>
-              <div className="relative aspect-square w-full max-w-md mx-auto lg:max-w-none">
+              <div className="relative mx-auto aspect-square w-full max-w-md lg:max-w-none">
                 {/* Main Image */}
-                <div className="absolute inset-0 z-10 overflow-hidden rounded-2xl bg-gray-100 shadow-2xl">
+                <div className="absolute inset-0 z-10 overflow-hidden rounded-[1.75rem] bg-gray-100 shadow-[0_34px_70px_-40px_rgba(34,34,34,0.75)]">
                    <Image
                     src="https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?q=80&w=2070&auto=format&fit=crop"
                     alt="Centro de distribuição de alimentos"
@@ -84,14 +90,14 @@ export default function AboutSection() {
                 </div>
                 
                 {/* Decorative Elements */}
-                <div className="absolute -bottom-6 -right-6 -z-10 h-full w-full rounded-2xl bg-brand-yellow/20" />
-                <div className="absolute -top-6 -left-6 -z-10 h-full w-full rounded-2xl bg-brand-red/5" />
+                <div className="absolute -bottom-7 -right-7 -z-10 h-full w-full rounded-[1.75rem] bg-brand-yellow/20" />
+                <div className="absolute -top-7 -left-7 -z-10 h-full w-full rounded-[1.75rem] bg-brand-red/5" />
                 
                 {/* Floating Badge (optional, visually appealing) */}
-                <div className="absolute bottom-8 -left-8 z-20 hidden md:block">
-                  <div className="rounded-lg bg-white p-4 shadow-xl border-l-4 border-brand-yellow">
-                    <p className="font-bold text-2xl text-brand-dark">+1000</p>
-                    <p className="text-sm font-medium text-gray-600">Clientes Atendidos</p>
+                <div className="absolute bottom-9 -left-8 z-20 hidden md:block">
+                  <div className="rounded-2xl border-l-4 border-brand-yellow bg-white/95 p-4 shadow-[0_20px_34px_-26px_rgba(34,34,34,0.85)] backdrop-blur-sm">
+                    <p className="font-[var(--font-heading)] text-2xl font-bold text-brand-dark">+1000</p>
+                    <p className="text-sm font-medium text-gray-600">Clientes atendidos</p>
                   </div>
                 </div>
               </div>

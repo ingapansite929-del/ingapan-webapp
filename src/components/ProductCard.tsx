@@ -10,7 +10,7 @@ export default function ProductCard({ product }: ProductCardProps) {
   const hasProductDetailPage = /^\d+$/.test(product.id);
 
   return (
-    <div className="group overflow-hidden rounded-2xl bg-white shadow-md transition-shadow duration-300 hover:shadow-xl">
+    <div className="group overflow-hidden rounded-[1.45rem] bg-white shadow-[0_20px_34px_-30px_rgba(34,34,34,0.7)] ring-1 ring-brand-dark/5 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_26px_44px_-30px_rgba(34,34,34,0.85)]">
       <Link
         href={hasProductDetailPage ? `/produtos/${product.id}` : "/produtos"}
         className="block"
@@ -26,15 +26,15 @@ export default function ProductCard({ product }: ProductCardProps) {
         </div>
 
         <div className="p-5">
-          <h3 className="font-[var(--font-heading)] text-lg font-semibold text-brand-dark">
+          <h3 className="font-[var(--font-heading)] text-lg font-semibold tracking-[-0.01em] text-brand-dark">
             {product.name}
           </h3>
-          <p className="mt-1.5 text-sm leading-relaxed text-gray-600">
+          <p className="mt-2 text-sm leading-relaxed text-gray-600">
             {product.description}
           </p>
         </div>
       </Link>
-      <div className="h-[3px] w-full bg-gradient-to-r from-brand-yellow to-brand-red" />
+      <div className="h-[3px] w-full bg-gradient-to-r from-brand-yellow via-brand-orange to-brand-red" />
     </div>
   );
 }
