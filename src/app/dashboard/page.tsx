@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
@@ -18,6 +19,16 @@ const ptBrDateTime = new Intl.DateTimeFormat("pt-BR", {
   dateStyle: "short",
   timeStyle: "short",
 });
+
+export const metadata: Metadata = {
+  title: "Painel do cliente",
+  description: "Área de clientes da Ingapan para gestão de pedidos e conta.",
+  robots: {
+    index: false,
+    follow: false,
+    nocache: true,
+  },
+};
 
 export default async function DashboardPage() {
   const supabase = await createClient();

@@ -4,6 +4,7 @@ import "./globals.css";
 import { CartProvider } from "@/lib/CartContext";
 import CartSidebar from "@/components/CartSidebar";
 import { ToastProvider } from "@/components/Toast";
+import { getSiteUrlObject } from "@/lib/seo";
 
 const outfit = Outfit({
   variable: "--font-inter",
@@ -18,14 +19,48 @@ const montserrat = Montserrat({
 });
 
 export const metadata: Metadata = {
-  title: "Ingapan | Distribuidora de Produtos Alimentícios",
+  metadataBase: getSiteUrlObject(),
+  title: {
+    default: "Ingapan | Distribuidora de Produtos Alimentícios",
+    template: "%s | Ingapan",
+  },
   description:
-    "Somos a Ingapan, sua parceira em distribuição de produtos alimentícios. Qualidade, variedade e confiança para abastecer seu negócio.",
+    "Distribuidora de produtos alimentícios para empresas. Qualidade, variedade e confiança para abastecer seu negócio com a Ingapan.",
+  keywords: [
+    "distribuidora de alimentos",
+    "fornecedor de alimentos",
+    "atacado alimentício",
+    "catálogo de produtos alimentícios",
+    "Ingapan",
+  ],
+  alternates: {
+    canonical: "/",
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
   openGraph: {
     title: "Ingapan | Distribuidora de Produtos Alimentícios",
     description:
-      "Qualidade, variedade e confiança na distribuição de alimentos.",
+      "Qualidade, variedade e confiança na distribuição de alimentos para o seu negócio.",
     type: "website",
+    url: "/",
+    siteName: "Ingapan",
+    locale: "pt_BR",
+    images: [
+      {
+        url: "/images/LOGO.png",
+        alt: "Logo da Ingapan",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Ingapan | Distribuidora de Produtos Alimentícios",
+    description:
+      "Qualidade, variedade e confiança na distribuição de alimentos para o seu negócio.",
+    images: ["/images/LOGO.png"],
   },
 };
 

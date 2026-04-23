@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -9,6 +10,12 @@ type SearchParams = Promise<{
   nome?: string | string[];
   categoria?: string | string[];
 }>;
+
+type ResolvedSearchParams = {
+  page?: string | string[];
+  nome?: string | string[];
+  categoria?: string | string[];
+};
 
 interface ProductsPageProps {
   searchParams: SearchParams;
@@ -41,6 +48,76 @@ function parsePositiveInt(value: string | string[] | undefined): number {
     return 1;
   }
   return parsed;
+}
+
+function buildCanonicalPath(page: number, nome: string, categoria: string): string {
+  const search = new URLSearchParams();
+
+  if (page > 1) {
+    search.set("page", String(page));
+  }
+
+  if (nome) {
+    search.set("nome", nome);
+  }
+
+  if (categoria) {
+    search.set("categoria", categoria);
+  }
+
+  const searchString = search.toString();
+  return searchString ? `/produtos?${searchString}` : "/produtos";
+}
+
+export async function generateMetadata({
+  searchParams,
+}: {
+  searchParams: Promise<ResolvedSearchParams>;
+}): Promise<Metadata> {
+  const params = await searchParams;
+  const page = parsePositiveInt(params.page);
+  const nome = getSingleValue(params.nome).trim();
+  const categoria = getSingleValue(params.categoria).trim();
+  const canonicalPath = buildCanonicalPath(page, nome, categoria);
+  const hasFilters = Boolean(nome || categoria);
+  const title = hasFilters
+    ? "Catálogo de produtos filtrado"
+    : page > 1
+      ? `Catálogo de produtos - Página ${page}`
+      : "Catálogo de produtos";
+  const description = hasFilters
+    ? "Explore os produtos filtrados da Ingapan para encontrar opções ideais para sua empresa."
+    : "Explore o catálogo completo da Ingapan com produtos alimentícios para empresas.";
+
+  return {
+    title,
+    description,
+    alternates: {
+      canonical: canonicalPath,
+    },
+    robots: {
+      index: !hasFilters,
+      follow: true,
+    },
+    openGraph: {
+      title: `${title} | Ingapan`,
+      description,
+      url: canonicalPath,
+      type: "website",
+      images: [
+        {
+          url: "/images/LOGO.png",
+          alt: "Logo da Ingapan",
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `${title} | Ingapan`,
+      description,
+      images: ["/images/LOGO.png"],
+    },
+  };
 }
 
 export default async function ProductsPage({ searchParams }: ProductsPageProps) {
