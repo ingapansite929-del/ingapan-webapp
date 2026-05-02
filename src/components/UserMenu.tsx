@@ -9,13 +9,14 @@ import { createClient } from "@/lib/supabase/client";
 interface UserMenuProps {
   isScrolled: boolean;
   initialUser: AuthUser | null;
+  scrollLevel?: number;
 }
 
 interface AuthUser {
   email?: string | null;
 }
 
-export default function UserMenu({ isScrolled, initialUser }: UserMenuProps) {
+export default function UserMenu({ isScrolled, initialUser, scrollLevel = 0 }: UserMenuProps) {
   const [user, setUser] = useState<AuthUser | null>(initialUser);
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -37,6 +38,7 @@ export default function UserMenu({ isScrolled, initialUser }: UserMenuProps) {
 
   useEffect(() => {
     if (!isOpen) return;
+
     function handleClickOutside(event: MouseEvent) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setIsOpen(false);
@@ -62,10 +64,11 @@ export default function UserMenu({ isScrolled, initialUser }: UserMenuProps) {
     setIsOpen(!isOpen);
   };
 
-  const buttonClasses = `rounded-full p-2 transition-all duration-200 active:scale-[0.97] md:p-2.5 ${
-    isScrolled
-      ? "bg-brand-dark/10 text-brand-dark hover:bg-brand-dark/20"
-      : "bg-white/20 text-white hover:bg-white/30"
+  // Classes dinâmicas baseadas em scrollLevel
+  const buttonClasses = `group cursor-pointer rounded-full p-2.5 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_10px_18px_-14px_rgba(34,34,34,0.35)] active:scale-[0.97] ${
+    scrollLevel >= 1
+      ? "text-brand-dark bg-brand-dark/8 hover:bg-brand-dark/12"
+      : "text-brand-dark bg-white/30 hover:bg-brand-yellow hover:text-brand-red hover:shadow-[0_12px_22px_-14px_rgba(249,207,0,0.65)]"
   }`;
 
   if (!user) {
@@ -74,8 +77,9 @@ export default function UserMenu({ isScrolled, initialUser }: UserMenuProps) {
         href="/auth/login"
         className={buttonClasses}
         aria-label="Fazer Login"
+        title="Fazer login"
       >
-        <UserIcon className="h-5 w-5 md:h-6 md:w-6" />
+        <UserIcon className="h-5 w-5 transition-transform duration-200 group-hover:scale-110" strokeWidth={1.5} />
       </Link>
     );
   }
@@ -87,33 +91,39 @@ export default function UserMenu({ isScrolled, initialUser }: UserMenuProps) {
         className={buttonClasses}
         aria-label="Menu do Usuário"
         aria-expanded={isOpen}
+        title="Menu do usuário"
       >
-        <UserIcon className="h-5 w-5 md:h-6 md:w-6" />
+        <UserIcon className="h-5 w-5 transition-transform duration-200 group-hover:scale-110" strokeWidth={1.5} />
       </button>
 
       {isOpen && (
-        <div className="animate-in fade-in zoom-in-95 absolute right-0 mt-2 w-52 origin-top-right rounded-xl bg-white py-1 shadow-[0_22px_38px_-30px_rgba(34,34,34,0.75)] ring-1 ring-black/5 duration-200 focus:outline-none">
-          <div className="px-4 py-2 border-b border-gray-100">
-            <p className="text-xs text-gray-500 truncate">Logado como</p>
-            <p className="text-sm font-medium text-gray-900 truncate">
+        <div className="animate-in fade-in zoom-in-95 absolute right-0 mt-2 w-56 origin-top-right rounded-xl bg-white py-1 shadow-[0_22px_38px_-30px_rgba(34,34,34,0.75)] ring-1 ring-black/5 duration-200 focus:outline-none">
+          {/* Email Section */}
+          <div className="px-4 py-3 border-b border-gray-100">
+            <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+              Logado como
+            </p>
+            <p className="text-sm font-semibold text-gray-900 truncate mt-1">
               {user.email}
             </p>
           </div>
 
+          {/* Dashboard Link */}
           <Link
             href="/dashboard"
-            className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+            className="flex items-center gap-3 px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors group"
             onClick={() => setIsOpen(false)}
           >
-            <LayoutDashboard className="mr-2 h-4 w-4" />
+            <LayoutDashboard className="h-4 w-4 text-gray-500 group-hover:text-brand-dark transition-colors" />
             Dashboard
           </Link>
 
+          {/* Logout Button */}
           <button
             onClick={handleSignOut}
-            className="flex w-full items-center px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
+            className="flex w-full items-center gap-3 px-4 py-3 text-sm font-medium text-red-600 hover:bg-red-50 transition-colors group"
           >
-            <LogOut className="mr-2 h-4 w-4" />
+            <LogOut className="h-4 w-4 text-red-500 group-hover:text-red-700 transition-colors" />
             Sair
           </button>
         </div>
