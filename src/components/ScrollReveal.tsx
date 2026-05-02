@@ -8,6 +8,31 @@ interface ScrollRevealProps {
   delay?: number;
 }
 
+// Observer compartilhado entre todas as instâncias para evitar
+// criar um IntersectionObserver por componente.
+const callbacks = new WeakMap<Element, () => void>();
+let sharedObserver: IntersectionObserver | null = null;
+
+function getSharedObserver() {
+  if (typeof window === "undefined") return null;
+  if (!sharedObserver) {
+    sharedObserver = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) {
+            const cb = callbacks.get(entry.target);
+            if (cb) cb();
+            callbacks.delete(entry.target);
+            sharedObserver?.unobserve(entry.target);
+          }
+        }
+      },
+      { threshold: 0.1, rootMargin: "0px 0px -50px 0px" }
+    );
+  }
+  return sharedObserver;
+}
+
 export default function ScrollReveal({
   children,
   className = "",
@@ -20,18 +45,19 @@ export default function ScrollReveal({
     const element = ref.current;
     if (!element) return;
 
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setIsVisible(true);
-          observer.unobserve(element);
-        }
-      },
-      { threshold: 0.1, rootMargin: "0px 0px -50px 0px" }
-    );
+    const observer = getSharedObserver();
+    if (!observer) {
+      setIsVisible(true);
+      return;
+    }
 
+    callbacks.set(element, () => setIsVisible(true));
     observer.observe(element);
-    return () => observer.disconnect();
+
+    return () => {
+      callbacks.delete(element);
+      observer.unobserve(element);
+    };
   }, []);
 
   return (
