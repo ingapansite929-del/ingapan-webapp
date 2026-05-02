@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useRef, useState } from "react";
 import { useToast } from "@/components/Toast";
 
 interface Product {
@@ -53,8 +53,17 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   });
   const [isOpen, setIsOpen] = useState(false);
   const { addToast } = useToast();
+  const hasMounted = useRef(false);
 
   useEffect(() => {
+    // Evita gravar no localStorage no primeiro render quando o carrinho
+    // já está vazio e ainda não houve alteração pelo usuário.
+    if (!hasMounted.current) {
+      hasMounted.current = true;
+      if (items.length === 0 && !localStorage.getItem("cart-storage")) {
+        return;
+      }
+    }
     localStorage.setItem("cart-storage", JSON.stringify(items));
   }, [items]);
 

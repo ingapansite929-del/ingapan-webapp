@@ -8,46 +8,35 @@ import { createClient } from "@/lib/supabase/client";
 
 interface UserMenuProps {
   isScrolled: boolean;
+  initialUser: AuthUser | null;
 }
 
 interface AuthUser {
   email?: string | null;
 }
 
-export default function UserMenu({ isScrolled }: UserMenuProps) {
-  const [user, setUser] = useState<AuthUser | null>(null);
+export default function UserMenu({ isScrolled, initialUser }: UserMenuProps) {
+  const [user, setUser] = useState<AuthUser | null>(initialUser);
   const [isOpen, setIsOpen] = useState(false);
-  const [loading, setLoading] = useState(true);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
-  const supabase = createClient();
 
   useEffect(() => {
-    async function getUser() {
-      try {
-        const {
-          data: { user },
-        } = await supabase.auth.getUser();
-        setUser(user);
-      } catch (error) {
-        console.error("Error fetching user:", error);
-      } finally {
-        setLoading(false);
-      }
-    }
+    const supabase = createClient();
 
-    getUser();
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null);
     });
 
     return () => {
       subscription.unsubscribe();
     };
-  }, [supabase]);
+  }, []);
 
   useEffect(() => {
+    if (!isOpen) return;
     function handleClickOutside(event: MouseEvent) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setIsOpen(false);
@@ -58,9 +47,10 @@ export default function UserMenu({ isScrolled }: UserMenuProps) {
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, []);
+  }, [isOpen]);
 
   const handleSignOut = async () => {
+    const supabase = createClient();
     await supabase.auth.signOut();
     setIsOpen(false);
     setUser(null);
@@ -77,14 +67,6 @@ export default function UserMenu({ isScrolled }: UserMenuProps) {
       ? "bg-brand-dark/10 text-brand-dark hover:bg-brand-dark/20"
       : "bg-white/20 text-white hover:bg-white/30"
   }`;
-
-  if (loading) {
-    return (
-      <div className={buttonClasses}>
-        <div className="h-5 w-5 md:h-6 md:w-6 animate-pulse bg-current opacity-50 rounded-full" />
-      </div>
-    );
-  }
 
   if (!user) {
     return (

@@ -1,5 +1,3 @@
-"use client";
-
 import Image from "next/image";
 import ScrollReveal from "./ScrollReveal";
 import { CheckCircle, Truck, Users, Award } from "lucide-react";
@@ -75,11 +73,12 @@ export default function AboutSection() {
                 {/* Main Image */}
                 <div className="absolute inset-0 z-10 overflow-hidden rounded-2xl bg-gray-100 shadow-2xl">
                    <Image
-                    src="https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?q=80&w=2070&auto=format&fit=crop"
+                    src="https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?q=70&w=1200&auto=format&fit=crop"
                     alt="Centro de distribuição de alimentos"
                     fill
                     className="object-cover object-center transition-transform duration-500 hover:scale-105"
-                    sizes="(max-width: 768px) 100vw, 50vw"
+                    sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 600px"
+                    loading="lazy"
                   />
                 </div>
                 

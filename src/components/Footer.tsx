@@ -27,8 +27,10 @@ export default function Footer() {
               <Image
                 src="/images/LOGO.png"
                 alt="IngaPan"
-                width={200}
-                height={133}
+                width={400}
+                height={271}
+                sizes="192px"
+                loading="lazy"
                 className="h-auto w-48"
               />
               <p className="mt-4 max-w-xs text-sm leading-relaxed text-gray-400">
