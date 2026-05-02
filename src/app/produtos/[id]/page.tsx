@@ -14,6 +14,7 @@ import {
   parseProductId,
 } from "@/features/products/data";
 import { getProductCategory } from "@/features/products/types";
+import { getSiteUrl } from "@/lib/seo";
 
 interface ProductDetailPageProps {
   params: Promise<{ id: string }>;
@@ -33,6 +34,10 @@ export async function generateMetadata({
     return {
       title: "Produto | Ingapan",
       description: "Detalhes do produto no catálogo Ingapan.",
+      robots: {
+        index: false,
+        follow: true,
+      },
     };
   }
 
@@ -41,15 +46,38 @@ export async function generateMetadata({
     return {
       title: "Produto não encontrado | Ingapan",
       description: "Produto não encontrado no catálogo Ingapan.",
+      robots: {
+        index: false,
+        follow: true,
+      },
     };
   }
 
+  const canonicalPath = `/produtos/${product.id}`;
+  const description = truncateDescription(product.descricao);
+
   return {
     title: `${product.nome} | Ingapan`,
-    description: truncateDescription(product.descricao),
+    description,
+    alternates: {
+      canonical: canonicalPath,
+    },
     openGraph: {
       title: `${product.nome} | Ingapan`,
-      description: truncateDescription(product.descricao),
+      description,
+      url: canonicalPath,
+      type: "article",
+      images: [
+        {
+          url: product.image_url,
+          alt: product.nome,
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `${product.nome} | Ingapan`,
+      description,
       images: [product.image_url],
     },
   };
@@ -70,9 +98,57 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
 
   const category = getProductCategory(product);
   const relatedProducts = await getRelatedProducts(product.id, product.id_categoria);
+  const siteUrl = getSiteUrl();
+  const productUrl = `${siteUrl}/produtos/${product.id}`;
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    name: product.nome,
+    description: product.descricao,
+    image: [product.image_url],
+    url: productUrl,
+    brand: {
+      "@type": "Brand",
+      name: "Ingapan",
+    },
+    sku: String(product.id),
+    category: category?.category,
+  };
+  const breadcrumbJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      {
+        "@type": "ListItem",
+        position: 1,
+        name: "Início",
+        item: siteUrl,
+      },
+      {
+        "@type": "ListItem",
+        position: 2,
+        name: "Produtos",
+        item: `${siteUrl}/produtos`,
+      },
+      {
+        "@type": "ListItem",
+        position: 3,
+        name: product.nome,
+        item: productUrl,
+      },
+    ],
+  };
 
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+      />
       <ProductViewTracker productId={product.id} />
       <Header />
 

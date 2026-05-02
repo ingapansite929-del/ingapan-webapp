@@ -50,15 +50,18 @@ export default function ProductCarousel({ products }: ProductCarouselProps) {
   const hasMultipleSlides = products.length > 1;
 
   return (
-    <section id="produtos" className="bg-brand-light py-16 md:py-24">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+    <section id="produtos" className="bg-brand-light py-20 md:py-28">
+      <div className="mx-auto max-w-[90rem] px-4 sm:px-6 lg:px-10">
         <ScrollReveal>
           <div className="mb-12 text-center md:mb-16">
-            <h2 className="font-[var(--font-heading)] text-3xl font-bold text-brand-dark md:text-4xl">
+            <p className="text-sm font-medium tracking-[0.16em] text-brand-red uppercase">
+              Catálogo em destaque
+            </p>
+            <h2 className="mt-3 font-[var(--font-heading)] text-3xl font-bold tracking-[-0.02em] text-brand-dark md:text-4xl">
               Nossos Produtos
             </h2>
             <div className="mx-auto mt-3 h-1 w-16 rounded-full bg-brand-yellow" />
-            <p className="mx-auto mt-4 max-w-2xl text-base text-gray-600 md:text-lg">
+            <p className="mx-auto mt-4 max-w-[63ch] text-base leading-relaxed text-gray-600 md:text-lg">
               Oferecemos uma ampla variedade de produtos alimentícios para
               atender às necessidades do seu negócio.
             </p>
@@ -86,14 +89,14 @@ export default function ProductCarousel({ products }: ProductCarouselProps) {
               <>
                 <button
                   onClick={scrollPrev}
-                  className="absolute -left-2 top-1/2 z-10 -translate-y-1/2 rounded-full bg-brand-red p-2.5 text-white shadow-lg transition-all duration-200 hover:scale-110 hover:bg-brand-red/90 md:-left-5 md:p-3"
+                  className="absolute -left-2 top-1/2 z-10 -translate-y-1/2 rounded-full bg-brand-red p-2.5 text-white shadow-[0_16px_24px_-16px_rgba(186,37,30,0.85)] transition-all duration-200 hover:scale-110 hover:bg-brand-red/90 active:scale-[0.97] md:-left-5 md:p-3"
                   aria-label="Produto anterior"
                 >
                   <ChevronLeft size={22} />
                 </button>
                 <button
                   onClick={scrollNext}
-                  className="absolute -right-2 top-1/2 z-10 -translate-y-1/2 rounded-full bg-brand-red p-2.5 text-white shadow-lg transition-all duration-200 hover:scale-110 hover:bg-brand-red/90 md:-right-5 md:p-3"
+                  className="absolute -right-2 top-1/2 z-10 -translate-y-1/2 rounded-full bg-brand-red p-2.5 text-white shadow-[0_16px_24px_-16px_rgba(186,37,30,0.85)] transition-all duration-200 hover:scale-110 hover:bg-brand-red/90 active:scale-[0.97] md:-right-5 md:p-3"
                   aria-label="Próximo produto"
                 >
                   <ChevronRight size={22} />
