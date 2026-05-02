@@ -1,14 +1,18 @@
 import type { Metadata } from "next";
+import dynamic from "next/dynamic";
 import Header from "@/components/Header";
 import Hero from "@/components/Hero";
 import AboutSection from "@/components/AboutSection";
-import ProductCarousel from "@/components/ProductCarousel";
 import Footer from "@/components/Footer";
-import SocialWidget from "@/components/SocialWidget";
 import { PRODUCTS } from "@/lib/constants";
 import { createClient } from "@/lib/supabase/server";
 import { getSiteUrl } from "@/lib/seo";
 import type { ProductCategory } from "@/types";
+
+// Code-split: ProductCarousel carrega Embla + Autoplay (~30KB),
+// e SocialWidget só importa quando estiver pronto, fora do bundle crítico.
+const ProductCarousel = dynamic(() => import("@/components/ProductCarousel"));
+const SocialWidget = dynamic(() => import("@/components/SocialWidget"));
 
 interface FeaturedRow {
   product_id: number;
@@ -99,9 +103,21 @@ async function getHomepageCarouselProducts(): Promise<ProductCategory[]> {
   return mapped.length > 0 ? mapped : PRODUCTS;
 }
 
+async function getInitialUser() {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  return user ? { email: user.email } : null;
+}
+
 export default async function Home() {
-  const carouselProducts = await getHomepageCarouselProducts();
   const siteUrl = getSiteUrl();
+  const [carouselProducts, initialUser] = await Promise.all([
+    getHomepageCarouselProducts(),
+    getInitialUser(),
+  ]);
+
   const jsonLd = [
     {
       "@context": "https://schema.org",
@@ -125,7 +141,7 @@ export default async function Home() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      <Header />
+      <Header initialUser={initialUser} />
       <main id="conteudo-principal">
         <Hero />
         <AboutSection />

@@ -41,6 +41,16 @@ html {
   }
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
 body {
   background:
     radial-gradient(1100px 550px at -8% -8%, rgb(249 207 0 / 0.1), transparent 60%),

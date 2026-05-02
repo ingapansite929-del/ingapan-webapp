@@ -1,24 +1,16 @@
-"use client";
-
 import { ChevronDown } from "lucide-react";
+import HeroCTAs from "./HeroCTAs";
 
 export default function Hero() {
-  const scrollToProducts = () => {
-    document.getElementById("produtos")?.scrollIntoView({ behavior: "smooth" });
-  };
-
-  const scrollToContact = () => {
-    document.getElementById("contato")?.scrollIntoView({ behavior: "smooth" });
-  };
-
   return (
-    <section className="relative flex min-h-[100dvh] items-center overflow-hidden">
+    <section className="relative flex min-h-screen items-center overflow-hidden bg-brand-dark">
       <video
         autoPlay
         muted
         loop
         playsInline
-        preload="auto"
+        preload="metadata"
+        aria-hidden="true"
         className="absolute inset-0 h-full w-full object-cover"
       >
         <source src="/videos/ingapan_presentation.mp4" type="video/mp4" />
@@ -44,31 +36,17 @@ export default function Hero() {
             seu negócio com eficiência e confiança.
           </p>
 
-          <div className="mt-8 flex flex-col gap-4 sm:flex-row md:mt-10">
-            <button
-              onClick={scrollToProducts}
-              className="rounded-full bg-brand-yellow px-8 py-4 text-lg font-semibold text-brand-dark transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_18px_30px_-16px_rgba(249,207,0,0.75)] active:translate-y-px"
-            >
-              Conheça Nossos Produtos
-            </button>
-
-            <button
-              onClick={scrollToContact}
-              className="rounded-full border-2 border-white/55 px-8 py-4 text-lg font-semibold text-white transition-all duration-200 hover:border-white hover:bg-white/10 active:translate-y-px"
-            >
-              Fale Conosco
-            </button>
-          </div>
+          <HeroCTAs />
         </div>
       </div>
 
-      <button
-        onClick={scrollToProducts}
-        className="absolute bottom-8 left-1/2 z-10 -translate-x-1/2 rounded-full border border-white/30 bg-white/10 p-2 text-white/80 backdrop-blur-sm transition-colors hover:text-white"
+      <a
+        href="#produtos"
+        className="absolute bottom-8 left-1/2 z-10 -translate-x-1/2 animate-bounce-slow text-white/70 transition-colors hover:text-white"
         aria-label="Rolar para produtos"
       >
         <ChevronDown size={36} />
-      </button>
+      </a>
     </section>
   );
 }

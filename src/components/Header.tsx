@@ -8,15 +8,30 @@ import { ShoppingCart } from "lucide-react";
 import { useCart } from "@/lib/CartContext";
 import UserMenu from "./UserMenu";
 
-export default function Header() {
+interface AuthUser {
+  email?: string | null;
+}
+
+interface HeaderProps {
+  initialUser?: AuthUser | null;
+}
+
+export default function Header({ initialUser = null }: HeaderProps) {
   const [isScrolled, setIsScrolled] = useState(false);
   const { openCart, itemCount } = useCart();
   const pathname = usePathname();
 
   useEffect(() => {
+    let ticking = false;
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 50);
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(() => {
+        setIsScrolled(window.scrollY > 50);
+        ticking = false;
+      });
     };
+    handleScroll();
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
@@ -39,12 +54,14 @@ export default function Header() {
             <Image
               src="/images/LOGO.png"
               alt="IngaPan"
-              width={2045}
-              height={1386}
+              width={300}
+              height={203}
+              sizes="(max-width: 768px) 96px, 112px"
               className={`h-12 w-auto md:h-14 transition-all duration-300 ${
                 isScrolled ? "brightness-100" : "brightness-0 invert"
               }`}
               priority
+              fetchPriority="high"
             />
           </Link>
 
@@ -61,9 +78,9 @@ export default function Header() {
             >
               Produtos
             </Link>
-            
-            <UserMenu isScrolled={isScrolled} />
-            
+
+            <UserMenu isScrolled={isScrolled} initialUser={initialUser} />
+
             <button
               onClick={openCart}
               className={`relative rounded-full p-2 transition-all duration-200 active:scale-[0.97] md:p-2.5 ${
