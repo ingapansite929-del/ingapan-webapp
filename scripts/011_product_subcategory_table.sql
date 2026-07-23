@@ -44,5 +44,76 @@ CREATE INDEX IF NOT EXISTS products_id_subcategoria_idx
   ON public.products (id_subcategoria);
 
 -- ============================================================================
+-- ROW LEVEL SECURITY (RLS)
+--
+-- Alinha as tabelas de apoio ao mesmo modelo de public.products:
+--   - Leitura publica (qualquer visitante pode listar categorias/subcategorias)
+--   - Escrita (INSERT/UPDATE/DELETE) restrita a admins via is_admin_ingapan()
+--
+-- Ate entao public.product_categoria estava sem RLS habilitado; aqui
+-- padronizamos ambas as tabelas. Idempotente via DROP POLICY IF EXISTS.
+-- ============================================================================
+
+-- ----------------------------------------------------------------------------
+-- RLS: public.product_categoria
+-- ----------------------------------------------------------------------------
+ALTER TABLE public.product_categoria ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS product_categoria_public_select ON public.product_categoria;
+CREATE POLICY product_categoria_public_select
+  ON public.product_categoria
+  FOR SELECT
+  USING (true);
+
+DROP POLICY IF EXISTS product_categoria_admin_insert ON public.product_categoria;
+CREATE POLICY product_categoria_admin_insert
+  ON public.product_categoria
+  FOR INSERT
+  WITH CHECK (public.is_admin_ingapan(auth.uid()));
+
+DROP POLICY IF EXISTS product_categoria_admin_update ON public.product_categoria;
+CREATE POLICY product_categoria_admin_update
+  ON public.product_categoria
+  FOR UPDATE
+  USING (public.is_admin_ingapan(auth.uid()))
+  WITH CHECK (public.is_admin_ingapan(auth.uid()));
+
+DROP POLICY IF EXISTS product_categoria_admin_delete ON public.product_categoria;
+CREATE POLICY product_categoria_admin_delete
+  ON public.product_categoria
+  FOR DELETE
+  USING (public.is_admin_ingapan(auth.uid()));
+
+-- ----------------------------------------------------------------------------
+-- RLS: public.product_subcategory
+-- ----------------------------------------------------------------------------
+ALTER TABLE public.product_subcategory ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS product_subcategory_public_select ON public.product_subcategory;
+CREATE POLICY product_subcategory_public_select
+  ON public.product_subcategory
+  FOR SELECT
+  USING (true);
+
+DROP POLICY IF EXISTS product_subcategory_admin_insert ON public.product_subcategory;
+CREATE POLICY product_subcategory_admin_insert
+  ON public.product_subcategory
+  FOR INSERT
+  WITH CHECK (public.is_admin_ingapan(auth.uid()));
+
+DROP POLICY IF EXISTS product_subcategory_admin_update ON public.product_subcategory;
+CREATE POLICY product_subcategory_admin_update
+  ON public.product_subcategory
+  FOR UPDATE
+  USING (public.is_admin_ingapan(auth.uid()))
+  WITH CHECK (public.is_admin_ingapan(auth.uid()));
+
+DROP POLICY IF EXISTS product_subcategory_admin_delete ON public.product_subcategory;
+CREATE POLICY product_subcategory_admin_delete
+  ON public.product_subcategory
+  FOR DELETE
+  USING (public.is_admin_ingapan(auth.uid()));
+
+-- ============================================================================
 -- FIM DA MIGRATION
 -- ============================================================================
