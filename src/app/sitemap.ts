@@ -7,6 +7,10 @@ interface ProductSitemapRow {
   updated_at: string | null;
 }
 
+// Revalidate hourly so newly added/edited products surface in the sitemap
+// without waiting for a redeploy.
+export const revalidate = 3600;
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const siteUrl = getSiteUrl();
   const now = new Date();
