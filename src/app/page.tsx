@@ -26,17 +26,21 @@ interface ProductRow {
   image_url: string | null;
 }
 
+const HOME_TITLE = "Ingapan | Distribuidora de Alimentos em Maringá-PR";
+const HOME_DESCRIPTION =
+  "A Ingapan é distribuidora de produtos alimentícios em Maringá-PR. Qualidade, variedade e entrega ágil para abastecer padarias, mercados e o seu negócio.";
+
 export const metadata: Metadata = {
-  title: "Início",
-  description:
-    "Conheça a Ingapan e encontre produtos alimentícios para abastecer seu negócio com qualidade e confiança.",
+  // `absolute` evita o sufixo "| Ingapan" do template do layout, já que este
+  // título é auto-suficiente (marca + palavra-chave + cidade).
+  title: { absolute: HOME_TITLE },
+  description: HOME_DESCRIPTION,
   alternates: {
     canonical: "/",
   },
   openGraph: {
-    title: "Ingapan | Distribuidora de Produtos Alimentícios",
-    description:
-      "Conheça a Ingapan e encontre produtos alimentícios para abastecer seu negócio com qualidade e confiança.",
+    title: HOME_TITLE,
+    description: HOME_DESCRIPTION,
     url: "/",
     type: "website",
     images: [
@@ -48,9 +52,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Ingapan | Distribuidora de Produtos Alimentícios",
-    description:
-      "Conheça a Ingapan e encontre produtos alimentícios para abastecer seu negócio com qualidade e confiança.",
+    title: HOME_TITLE,
+    description: HOME_DESCRIPTION,
     images: ["/images/LOGO.png"],
   },
 };
