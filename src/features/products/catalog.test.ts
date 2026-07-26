@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   buildProductsUrl,
+  createCatalogNavigationLock,
   getPaginationItems,
 } from "@/features/products/catalog";
 
@@ -31,5 +32,18 @@ describe("filtros e paginação do catálogo", () => {
       "ellipsis",
       12,
     ]);
+  });
+
+  it("aceita somente uma navegação enquanto a anterior está pendente", () => {
+    const lock = createCatalogNavigationLock();
+    const attempts = Array.from({ length: 20 }, () =>
+      lock.tryStart("/produtos?page=20")
+    );
+
+    expect(attempts.filter(Boolean)).toHaveLength(1);
+    expect(lock.current()).toBe("/produtos?page=20");
+
+    lock.release();
+    expect(lock.tryStart("/produtos?page=21")).toBe(true);
   });
 });

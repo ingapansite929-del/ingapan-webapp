@@ -32,7 +32,9 @@ export default function ProductDetailActions({
     <div className="mt-8 flex flex-col gap-3 sm:flex-row">
       <Button
         type="button"
-        onClick={() => addItem(product)}
+        onClick={(event) =>
+          addItem(product, { sourceElement: event.currentTarget })
+        }
         variant="secondary"
         size="lg"
       >

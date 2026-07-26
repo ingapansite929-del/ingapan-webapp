@@ -8,7 +8,6 @@ import { isAdminRole } from "@/lib/auth/admin";
 import LogoutButton from "@/components/LogoutButton";
 import AdminShell from "@/components/admin/AdminShell";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import TopViewedProductsCard, {
   TopViewedProductsCardSkeleton,
 } from "@/components/admin/TopViewedProductsCard";
@@ -69,7 +68,7 @@ export default async function DashboardPage() {
             <Badge variant="secondary">Visão geral</Badge>
             <h1 className="mt-3 text-3xl font-bold">Painel administrativo</h1>
             <p className="mt-1 text-muted-foreground">
-              Indicadores rápidos e acesso aos módulos de gestão.
+              Indicadores rápidos da operação e do catálogo.
             </p>
           </div>
 
@@ -80,41 +79,6 @@ export default async function DashboardPage() {
             <Suspense fallback={<TopOrderedProductsCardSkeleton />}>
               <TopOrderedProductsCard />
             </Suspense>
-          </section>
-
-          <section className="grid gap-4 md:grid-cols-2">
-            <Card>
-              <CardHeader>
-                <CardTitle>Produtos</CardTitle>
-                <CardDescription>
-                  Cadastro, edição, filtros e produtos em destaque.
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Link
-                  href="/admin/products"
-                  className="text-sm font-semibold text-brand-red hover:underline"
-                >
-                  Acessar gestão de produtos →
-                </Link>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader>
-                <CardTitle>Clientes</CardTitle>
-                <CardDescription>
-                  Pedidos, engajamento e indicadores dos clientes.
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Link
-                  href="/admin/clientes"
-                  className="text-sm font-semibold text-brand-red hover:underline"
-                >
-                  Acessar gestão de clientes →
-                </Link>
-              </CardContent>
-            </Card>
           </section>
         </div>
       </AdminShell>

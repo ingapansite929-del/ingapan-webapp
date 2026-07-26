@@ -71,6 +71,7 @@ export default function RootLayout({
     <html
       lang="pt-BR"
       className={`${outfit.variable} ${montserrat.variable}`}
+      data-scroll-behavior="smooth"
     >
       <body className="antialiased">
         <a

@@ -1,22 +1,20 @@
 "use client";
 
-export default function HeroCTAs() {
-  const scrollToProducts = () => {
-    document.getElementById("produtos")?.scrollIntoView({ behavior: "smooth" });
-  };
+import Link from "next/link";
 
+export default function HeroCTAs() {
   const scrollToContact = () => {
     document.getElementById("contato")?.scrollIntoView({ behavior: "smooth" });
   };
 
   return (
     <div className="mt-8 flex flex-col gap-4 sm:flex-row md:mt-10">
-      <button
-        onClick={scrollToProducts}
+      <Link
+        href="/produtos"
         className="rounded-full bg-brand-yellow px-8 py-4 text-lg font-semibold text-brand-dark transition-all duration-200 hover:scale-105 hover:shadow-xl hover:shadow-brand-yellow/25"
       >
         Conheça Nossos Produtos
-      </button>
+      </Link>
 
       <button
         onClick={scrollToContact}

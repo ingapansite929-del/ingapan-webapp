@@ -116,6 +116,7 @@ export default function Header({ initialUser = null }: HeaderProps) {
               {/* Cart Button */}
               <button
                 onClick={openCart}
+                data-cart-trigger
                 className={`group relative cursor-pointer rounded-full p-2.5 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_10px_18px_-14px_rgba(34,34,34,0.35)] active:scale-[0.97] ${iconButtonClasses}`}
                 aria-label="Abrir carrinho"
                 title="Carrinho de compras"
@@ -142,6 +143,7 @@ export default function Header({ initialUser = null }: HeaderProps) {
               {/* Cart Button Mobile */}
               <button
                 onClick={openCart}
+                data-cart-trigger
                 className={`group relative cursor-pointer rounded-full p-2 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_10px_18px_-14px_rgba(34,34,34,0.35)] active:scale-[0.97] ${iconButtonClasses}`}
                 aria-label="Abrir carrinho"
                 title="Carrinho de compras"

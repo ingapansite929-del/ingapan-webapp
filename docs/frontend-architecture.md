@@ -30,6 +30,13 @@ Filtros públicos vivem na URL:
 A consulta usa `count: exact`, range no servidor e redireciona páginas fora do
 intervalo para a última página válida.
 
+O hero é parte do shell síncrono da rota. A leitura do catálogo fica em um
+Server Component assíncrono dentro de `Suspense`, enquanto um controlador
+cliente compartilha o estado de navegação entre filtros e paginação. Durante
+trocas de página, filtros e hero permanecem montados e somente resultados,
+total e paginação apresentam skeleton. Um bloqueio single-flight impede
+navegações repetidas para o mesmo destino.
+
 ## Supabase e Server Actions
 
 O frontend consome schema e políticas existentes. Nenhuma tela concede
@@ -43,6 +50,8 @@ explicitamente fora deste escopo.
 
 ## Administração
 
-`AdminShell` unifica `/dashboard` para administradores, `/admin/products` e
-`/admin/clientes`. O cliente comum mantém seu dashboard específico. URLs atuais
-são preservadas; apenas apresentação e estados foram harmonizados.
+`AdminShell` unifica `/dashboard` para administradores, `/admin/products`,
+`/admin/pedidos` e `/admin/clientes`. O cliente comum mantém seu dashboard
+específico. A sidebar pode ser recolhida durante a navegação, mas o estado não é
+persistido após recarregar. URLs antigas com `tab` em `/admin/clientes` são
+normalizadas para a rota correspondente.

@@ -4,7 +4,6 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   Edit3,
-  Eye,
   MoreHorizontal,
   PackagePlus,
   Search,
@@ -465,7 +464,22 @@ export default function AdminProductsWorkspace({
                       const category = getProductCategory(product);
                       const subcategory = getProductSubcategory(product);
                       return (
-                        <TableRow key={product.id}>
+                        <TableRow
+                          key={product.id}
+                          tabIndex={0}
+                          aria-label={`Editar ${product.nome}`}
+                          className="cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
+                          onClick={() => setEditingProduct(product)}
+                          onKeyDown={(event) => {
+                            if (
+                              event.key === "Enter" ||
+                              event.key === " "
+                            ) {
+                              event.preventDefault();
+                              setEditingProduct(product);
+                            }
+                          }}
+                        >
                           <TableCell>
                             <div className="relative size-11 overflow-hidden rounded-md bg-muted">
                               <ProductImage
@@ -494,18 +508,13 @@ export default function AdminProductsWorkspace({
                                   variant="ghost"
                                   size="icon"
                                   aria-label={`Ações de ${product.nome}`}
+                                  onClick={(event) => event.stopPropagation()}
                                 >
                                   <MoreHorizontal />
                                 </Button>
                               </DropdownMenuTrigger>
                               <DropdownMenuContent align="end">
                                 <DropdownMenuLabel>Ações</DropdownMenuLabel>
-                                <DropdownMenuItem asChild>
-                                  <Link href={`/produtos/${product.id}`}>
-                                    <Eye />
-                                    Visualizar
-                                  </Link>
-                                </DropdownMenuItem>
                                 <DropdownMenuItem
                                   onSelect={() => setEditingProduct(product)}
                                 >
@@ -537,9 +546,15 @@ export default function AdminProductsWorkspace({
                   return (
                     <article
                       key={product.id}
-                      className="flex gap-3 rounded-xl border p-3"
+                      className="relative flex gap-3 rounded-xl border p-3"
                     >
-                      <div className="relative size-20 shrink-0 overflow-hidden rounded-lg bg-muted">
+                      <button
+                        type="button"
+                        className="absolute inset-0 z-0 rounded-xl outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        aria-label={`Editar ${product.nome}`}
+                        onClick={() => setEditingProduct(product)}
+                      />
+                      <div className="pointer-events-none relative z-10 size-20 shrink-0 overflow-hidden rounded-lg bg-muted">
                         <ProductImage
                           src={product.image_url}
                           alt={product.nome}
@@ -548,7 +563,7 @@ export default function AdminProductsWorkspace({
                           sizes="80px"
                         />
                       </div>
-                      <div className="min-w-0 flex-1">
+                      <div className="pointer-events-none relative z-10 min-w-0 flex-1">
                         <p className="text-xs text-muted-foreground">
                           #{product.id}
                         </p>
@@ -559,11 +574,14 @@ export default function AdminProductsWorkspace({
                           {category?.category ?? "Sem categoria"} ·{" "}
                           {subcategory?.subcategoria ?? "Sem subcategoria"}
                         </p>
-                        <div className="mt-2 flex gap-2">
+                        <div className="pointer-events-auto mt-2 flex gap-2">
                           <Button
                             size="sm"
                             variant="outline"
-                            onClick={() => setEditingProduct(product)}
+                            onClick={(event) => {
+                              event.stopPropagation();
+                              setEditingProduct(product);
+                            }}
                           >
                             <Edit3 />
                             Editar
@@ -571,7 +589,10 @@ export default function AdminProductsWorkspace({
                           <Button
                             size="sm"
                             variant="ghost"
-                            onClick={() => setDeletingProduct(product)}
+                            onClick={(event) => {
+                              event.stopPropagation();
+                              setDeletingProduct(product);
+                            }}
                             aria-label={`Excluir ${product.nome}`}
                           >
                             <Trash2 className="text-destructive" />

@@ -1,8 +1,7 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { Filter, Search, SlidersHorizontal, X } from "lucide-react";
-import { useState, useTransition } from "react";
+import { useState, type ReactNode } from "react";
 import {
   buildProductsUrl,
   PRODUCT_ORDER_OPTIONS,
@@ -38,6 +37,8 @@ interface ProductsFiltersProps {
   subcategories: ProductSubcategoryOption[];
   filters: ProductCatalogFilters;
   total: number;
+  isPending: boolean;
+  onNavigate: (href: string) => boolean;
 }
 
 interface FilterControlsProps {
@@ -46,6 +47,7 @@ interface FilterControlsProps {
   subcategories: ProductSubcategoryOption[];
   draft: ProductCatalogFilters;
   setDraft: React.Dispatch<React.SetStateAction<ProductCatalogFilters>>;
+  action?: ReactNode;
 }
 
 function FilterControls({
@@ -54,9 +56,10 @@ function FilterControls({
   subcategories,
   draft,
   setDraft,
+  action,
 }: FilterControlsProps) {
   return (
-    <div className="grid min-w-0 flex-1 gap-4 lg:grid-cols-[minmax(240px,1.4fr)_minmax(180px,1fr)_minmax(180px,1fr)_minmax(180px,1fr)]">
+    <div className="grid min-w-0 flex-1 gap-4 lg:grid-cols-[minmax(240px,1.4fr)_minmax(180px,1fr)_minmax(180px,1fr)_minmax(180px,1fr)_auto]">
       <div className="space-y-2">
         <label htmlFor={`${prefix}-nome`} className="text-sm font-medium">
           Buscar por nome
@@ -96,7 +99,11 @@ function FilterControls({
           <SelectTrigger className="w-full" aria-label="Categoria">
             <SelectValue placeholder="Todas" />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent
+            position="popper"
+            align="start"
+            className="max-h-80 w-[var(--radix-select-trigger-width)]"
+          >
             <SelectItem value="all">Todas as categorias</SelectItem>
             {categories.map((category) => (
               <SelectItem key={category.id} value={String(category.id)}>
@@ -121,7 +128,11 @@ function FilterControls({
           <SelectTrigger className="w-full" aria-label="Subcategoria">
             <SelectValue placeholder="Todas" />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent
+            position="popper"
+            align="start"
+            className="max-h-80 w-[var(--radix-select-trigger-width)]"
+          >
             <SelectItem value="all">Todas as subcategorias</SelectItem>
             {subcategories.map((subcategory) => (
               <SelectItem key={subcategory.id} value={String(subcategory.id)}>
@@ -146,7 +157,11 @@ function FilterControls({
           <SelectTrigger className="w-full" aria-label="Ordenar produtos">
             <SelectValue />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent
+            position="popper"
+            align="start"
+            className="max-h-80 w-[var(--radix-select-trigger-width)]"
+          >
             {PRODUCT_ORDER_OPTIONS.map((option) => (
               <SelectItem key={option.value} value={option.value}>
                 {option.label}
@@ -155,6 +170,7 @@ function FilterControls({
           </SelectContent>
         </Select>
       </div>
+      {action ? <div className="flex items-end">{action}</div> : null}
     </div>
   );
 }
@@ -164,17 +180,17 @@ export default function ProductsFilters({
   subcategories,
   filters,
   total,
+  isPending,
+  onNavigate,
 }: ProductsFiltersProps) {
-  const router = useRouter();
   const [draft, setDraft] = useState(filters);
   const [mobileSearch, setMobileSearch] = useState(filters.nome);
-  const [isPending, startTransition] = useTransition();
   const hasActiveFilters = Boolean(
     filters.nome || filters.categoria || filters.subcategoria
   );
 
   const navigate = (nextFilters: ProductCatalogFilters) => {
-    startTransition(() => router.push(buildProductsUrl(nextFilters), { scroll: false }));
+    onNavigate(buildProductsUrl(nextFilters));
   };
 
   const applyDraft = (event?: React.FormEvent) => {
@@ -215,7 +231,7 @@ export default function ProductsFilters({
       <div className="rounded-2xl border bg-card p-4 shadow-[var(--shadow-soft)]">
         <form
           onSubmit={applyDraft}
-          className="hidden items-end gap-3 lg:flex"
+          className="hidden lg:block"
         >
           <FilterControls
             prefix="desktop"
@@ -223,16 +239,18 @@ export default function ProductsFilters({
             subcategories={subcategories}
             draft={draft}
             setDraft={setDraft}
+            action={
+              <Button
+                type="submit"
+                variant="secondary"
+                className="min-w-28"
+                disabled={isPending}
+              >
+                {isPending ? <Spinner /> : <Filter />}
+                Aplicar
+              </Button>
+            }
           />
-          <Button
-            type="submit"
-            variant="secondary"
-            className="min-w-28"
-            disabled={isPending}
-          >
-            {isPending ? <Spinner /> : <Filter />}
-            Aplicar
-          </Button>
         </form>
 
         <div className="flex gap-2 lg:hidden">

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { Suspense } from "react";
 import { Clock3, ShieldCheck, Truck } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -8,6 +9,7 @@ import ProductDetailActions from "@/components/products/ProductDetailActions";
 import ProductImage from "@/components/products/ProductImage";
 import ProductViewTracker from "@/components/products/ProductViewTracker";
 import RelatedProductsGrid from "@/components/products/RelatedProductsGrid";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   getProductById,
   getRelatedProducts,
@@ -23,6 +25,41 @@ import { getSiteUrl } from "@/lib/seo";
 
 interface ProductDetailPageProps {
   params: Promise<{ id: string }>;
+}
+
+async function RelatedProductsSection({
+  productId,
+  categoryId,
+}: {
+  productId: number;
+  categoryId: number | null;
+}) {
+  const relatedProducts = await getRelatedProducts(productId, categoryId);
+  return <RelatedProductsGrid products={relatedProducts} />;
+}
+
+function RelatedProductsSkeleton() {
+  return (
+    <section
+      className="mx-auto mt-12 max-w-7xl px-4 pb-16 sm:px-6 lg:px-8"
+      aria-label="Carregando produtos relacionados"
+    >
+      <Skeleton className="h-8 w-64" />
+      <Skeleton className="mt-2 h-5 w-96 max-w-full" />
+      <div className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        {Array.from({ length: 4 }).map((_, index) => (
+          <div key={index} className="overflow-hidden rounded-2xl border bg-card">
+            <Skeleton className="aspect-[4/3] rounded-none" />
+            <div className="space-y-3 p-5">
+              <Skeleton className="h-5 w-24" />
+              <Skeleton className="h-6 w-5/6" />
+              <Skeleton className="h-4 w-full" />
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
 }
 
 function truncateDescription(description: string | null): string {
@@ -105,7 +142,6 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
   const category = getProductCategory(product);
   const subcategory = getProductSubcategory(product);
   const imageUrl = getSafeImageUrl(product.image_url);
-  const relatedProducts = await getRelatedProducts(product.id, product.id_categoria);
   const siteUrl = getSiteUrl();
   const productUrl = `${siteUrl}/produtos/${product.id}`;
   const jsonLd = {
@@ -256,7 +292,12 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
           </article>
         </section>
 
-        <RelatedProductsGrid products={relatedProducts} />
+        <Suspense fallback={<RelatedProductsSkeleton />}>
+          <RelatedProductsSection
+            productId={product.id}
+            categoryId={product.id_categoria}
+          />
+        </Suspense>
       </main>
 
       <Footer />

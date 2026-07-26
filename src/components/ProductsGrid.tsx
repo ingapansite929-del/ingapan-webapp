@@ -34,6 +34,7 @@ import {
   type ProductRecord,
 } from "@/features/products/types";
 import { useCart } from "@/lib/CartContext";
+import { ProductsResultsSkeleton } from "@/components/products/ProductsCatalogSkeleton";
 
 interface ProductsGridProps {
   products: ProductRecord[];
@@ -42,6 +43,8 @@ interface ProductsGridProps {
   total: number;
   pageSize: number;
   filters: ProductCatalogFilters;
+  isPending: boolean;
+  onNavigate: (href: string) => boolean;
 }
 
 export default function ProductsGrid({
@@ -51,8 +54,14 @@ export default function ProductsGrid({
   total,
   pageSize,
   filters,
+  isPending,
+  onNavigate,
 }: ProductsGridProps) {
   const { addItem } = useCart();
+
+  if (isPending) {
+    return <ProductsResultsSkeleton />;
+  }
 
   if (products.length === 0) {
     return (
@@ -83,7 +92,7 @@ export default function ProductsGrid({
   return (
     <div className="space-y-8">
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-        {products.map((product) => {
+        {products.map((product, index) => {
           const category = getProductCategory(product);
           const subcategory = getProductSubcategory(product);
 
@@ -98,16 +107,22 @@ export default function ProductsGrid({
             >
               <Link
                 href={`/produtos/${product.id}`}
+                scroll
                 className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset"
                 aria-label={`Ver detalhes de ${product.nome}`}
               >
-                <div className="relative aspect-[4/3] overflow-hidden bg-muted">
+                <div
+                  data-product-image
+                  className="relative aspect-[4/3] overflow-hidden bg-muted"
+                >
                   <ProductImage
                     src={product.image_url}
                     alt={product.nome}
                     fill
                     className="object-cover transition-transform duration-500 group-hover:scale-[1.03]"
                     sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, 25vw"
+                    loading={index < 4 ? "eager" : "lazy"}
+                    fetchPriority={index === 0 ? "high" : "auto"}
                   />
                 </div>
                 <div className="space-y-3 p-5 pb-3">
@@ -144,7 +159,14 @@ export default function ProductsGrid({
                   type="button"
                   variant="secondary"
                   className="w-full"
-                  onClick={() => addItem(product)}
+                  onClick={(event) => {
+                    const card = event.currentTarget.closest("article");
+                    addItem(product, {
+                      sourceElement:
+                        card?.querySelector("[data-product-image]") ??
+                        event.currentTarget,
+                    });
+                  }}
                 >
                   <ShoppingCart />
                   Adicionar ao orçamento
@@ -170,6 +192,23 @@ export default function ProductsGrid({
                 className={
                   currentPage === 1 ? "pointer-events-none opacity-40" : ""
                 }
+                aria-disabled={currentPage === 1}
+                onClick={(event) => {
+                  if (
+                    currentPage === 1 ||
+                    event.metaKey ||
+                    event.ctrlKey ||
+                    event.shiftKey ||
+                    event.altKey
+                  ) {
+                    if (currentPage === 1) event.preventDefault();
+                    return;
+                  }
+                  event.preventDefault();
+                  onNavigate(
+                    buildProductsUrl(filters, Math.max(1, currentPage - 1))
+                  );
+                }}
               />
             </PaginationItem>
             {paginationItems.map((item, index) =>
@@ -183,6 +222,21 @@ export default function ProductsGrid({
                     href={buildProductsUrl(filters, item)}
                     isActive={item === currentPage}
                     aria-label={`Ir para a página ${item}`}
+                    aria-disabled={item === currentPage}
+                    onClick={(event) => {
+                      if (
+                        item === currentPage ||
+                        event.metaKey ||
+                        event.ctrlKey ||
+                        event.shiftKey ||
+                        event.altKey
+                      ) {
+                        if (item === currentPage) event.preventDefault();
+                        return;
+                      }
+                      event.preventDefault();
+                      onNavigate(buildProductsUrl(filters, item));
+                    }}
                   >
                     {item}
                   </PaginationLink>
@@ -201,6 +255,26 @@ export default function ProductsGrid({
                     ? "pointer-events-none opacity-40"
                     : ""
                 }
+                aria-disabled={currentPage === pageCount}
+                onClick={(event) => {
+                  if (
+                    currentPage === pageCount ||
+                    event.metaKey ||
+                    event.ctrlKey ||
+                    event.shiftKey ||
+                    event.altKey
+                  ) {
+                    if (currentPage === pageCount) event.preventDefault();
+                    return;
+                  }
+                  event.preventDefault();
+                  onNavigate(
+                    buildProductsUrl(
+                      filters,
+                      Math.min(pageCount, currentPage + 1)
+                    )
+                  );
+                }}
               />
             </PaginationItem>
           </PaginationContent>
