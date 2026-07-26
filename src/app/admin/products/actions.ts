@@ -2,6 +2,11 @@
 
 import { revalidatePath } from "next/cache";
 import { requireAdminAccess } from "@/lib/auth/admin";
+import {
+  productFormDataToObject,
+  productFormSchema,
+  updateProductFormSchema,
+} from "@/features/products/admin-schema";
 
 const ADMIN_PRODUCTS_PATH = "/admin/products";
 const HOME_PATH = "/";
@@ -11,14 +16,6 @@ const FEATURED_SELECTOR_PAGE_SIZE = 15;
 export type FeaturedSelectableProduct = {
   id: number;
   nome: string;
-};
-
-type ProductInput = {
-  id?: number;
-  nome: string;
-  id_categoria: number;
-  descricao: string;
-  imageUrl: string;
 };
 
 function normalizeText(value: FormDataEntryValue | null): string {
@@ -36,26 +33,6 @@ function validateLength(
   }
 
   return null;
-}
-
-function validateImageUrl(rawValue: string): string | null {
-  if (!rawValue) {
-    return "URL da imagem é obrigatória.";
-  }
-
-  if (rawValue.startsWith("/")) {
-    return null;
-  }
-
-  try {
-    const parsed = new URL(rawValue);
-    if (parsed.protocol !== "https:" && parsed.protocol !== "http:") {
-      return "URL da imagem deve usar HTTP ou HTTPS.";
-    }
-    return null;
-  } catch {
-    return "URL da imagem inválida.";
-  }
 }
 
 function parseId(value: FormDataEntryValue | null): number | null {
@@ -111,60 +88,6 @@ function parseFeaturedOrderIds(value: FormDataEntryValue | null): number[] | nul
   }
 }
 
-function parseProductInput(formData: FormData, includeId = false): {
-  data: ProductInput | null;
-  error: string | null;
-} {
-  const nome = normalizeText(formData.get("nome"));
-  const idCategoria = parseId(formData.get("id_categoria"));
-  const descricao = normalizeText(formData.get("descricao"));
-  const imageUrl = normalizeText(formData.get("image_url"));
-
-  const nomeError = validateLength("Nome", nome, 2, 120);
-  if (nomeError) return { data: null, error: nomeError };
-
-  if (!idCategoria) {
-    return { data: null, error: "Categoria inválida." };
-  }
-
-  const descricaoError = validateLength("Descrição", descricao, 5, 2000);
-  if (descricaoError) return { data: null, error: descricaoError };
-
-  const imageUrlError = validateImageUrl(imageUrl);
-  if (imageUrlError) return { data: null, error: imageUrlError };
-
-  if (!includeId) {
-    return {
-      data: {
-        nome,
-        id_categoria: idCategoria,
-        descricao,
-        imageUrl,
-      },
-      error: null,
-    };
-  }
-
-  const id = parseId(formData.get("id"));
-  if (!id) {
-    return {
-      data: null,
-      error: "ID inválido para atualização.",
-    };
-  }
-
-  return {
-    data: {
-      id,
-      nome,
-      id_categoria: idCategoria,
-      descricao,
-      imageUrl,
-    },
-    error: null,
-  };
-}
-
 export async function createProductAction(formData: FormData) {
   const { supabase } = await requireAdminAccess({
     forbiddenRedirectPath:
@@ -172,20 +95,28 @@ export async function createProductAction(formData: FormData) {
       encodeURIComponent("Acesso negado ao painel admin."),
   });
 
-  const { data, error } = parseProductInput(formData);
-  if (!data || error) {
-    return { success: false, message: error ?? "Dados do produto inválidos." };
+  const parsed = productFormSchema.safeParse(productFormDataToObject(formData));
+  if (!parsed.success) {
+    return {
+      success: false,
+      message: "Revise os campos destacados.",
+      fieldErrors: parsed.error.flatten().fieldErrors,
+    };
   }
 
   const { error: insertError } = await supabase.from("products").insert({
-    nome: data.nome,
-    id_categoria: data.id_categoria,
-    descricao: data.descricao,
-    image_url: data.imageUrl,
+    nome: parsed.data.nome,
+    id_categoria: parsed.data.id_categoria,
+    id_subcategoria: parsed.data.id_subcategoria,
+    descricao: parsed.data.descricao,
+    image_url: parsed.data.image_url,
   });
 
   if (insertError) {
-    return { success: false, message: "Nao foi possivel criar o produto." };
+    return {
+      success: false,
+      message: "Não foi possível criar o produto.",
+    };
   }
 
   revalidatePath(ADMIN_PRODUCTS_PATH);
@@ -253,23 +184,33 @@ export async function updateProductAction(formData: FormData) {
       encodeURIComponent("Acesso negado ao painel admin."),
   });
 
-  const { data, error } = parseProductInput(formData, true);
-  if (!data || error || !data.id) {
-    return { success: false, message: error ?? "Dados para atualização inválidos." };
+  const parsed = updateProductFormSchema.safeParse(
+    productFormDataToObject(formData)
+  );
+  if (!parsed.success) {
+    return {
+      success: false,
+      message: "Revise os campos destacados.",
+      fieldErrors: parsed.error.flatten().fieldErrors,
+    };
   }
 
   const { error: updateError } = await supabase
     .from("products")
     .update({
-      nome: data.nome,
-      id_categoria: data.id_categoria,
-      descricao: data.descricao,
-      image_url: data.imageUrl,
+      nome: parsed.data.nome,
+      id_categoria: parsed.data.id_categoria,
+      id_subcategoria: parsed.data.id_subcategoria,
+      descricao: parsed.data.descricao,
+      image_url: parsed.data.image_url,
     })
-    .eq("id", data.id);
+    .eq("id", parsed.data.id);
 
   if (updateError) {
-    return { success: false, message: "Nao foi possivel atualizar o produto." };
+    return {
+      success: false,
+      message: "Não foi possível atualizar o produto.",
+    };
   }
 
   revalidatePath(ADMIN_PRODUCTS_PATH);

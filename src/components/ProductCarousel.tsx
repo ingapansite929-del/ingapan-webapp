@@ -73,12 +73,12 @@ export default function ProductCarousel({ products }: ProductCarouselProps) {
             {/* Carousel */}
             <div className="overflow-hidden" ref={emblaRef}>
               <div className="flex">
-                {products.map((product) => (
+                {products.map((product, index) => (
                   <div
                     key={product.id}
                     className="min-w-0 flex-[0_0_100%] pl-4 sm:flex-[0_0_50%] lg:flex-[0_0_33.333%] xl:flex-[0_0_25%]"
                   >
-                    <ProductCard product={product} />
+                    <ProductCard product={product} priority={index === 0} />
                   </div>
                 ))}
               </div>

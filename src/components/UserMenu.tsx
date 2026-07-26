@@ -7,7 +7,6 @@ import { User as UserIcon, LogOut, LayoutDashboard } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
 interface UserMenuProps {
-  isScrolled: boolean;
   initialUser: AuthUser | null;
   scrollLevel?: number;
 }
@@ -16,7 +15,7 @@ interface AuthUser {
   email?: string | null;
 }
 
-export default function UserMenu({ isScrolled, initialUser, scrollLevel = 0 }: UserMenuProps) {
+export default function UserMenu({ initialUser, scrollLevel = 0 }: UserMenuProps) {
   const [user, setUser] = useState<AuthUser | null>(initialUser);
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);

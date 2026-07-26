@@ -1,7 +1,11 @@
-import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
-import { getProductCategory, type ProductRecord } from "@/features/products/types";
+import ProductImage from "@/components/products/ProductImage";
+import {
+  getProductCategory,
+  getProductSubcategory,
+  type ProductRecord,
+} from "@/features/products/types";
 
 interface RelatedProductsGridProps {
   products: ProductRecord[];
@@ -34,6 +38,7 @@ export default function RelatedProductsGrid({ products }: RelatedProductsGridPro
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
         {products.map((product) => {
           const category = getProductCategory(product);
+          const subcategory = getProductSubcategory(product);
 
           return (
             <article
@@ -42,7 +47,7 @@ export default function RelatedProductsGrid({ products }: RelatedProductsGridPro
             >
               <Link href={`/produtos/${product.id}`} className="block">
                 <div className="relative aspect-[4/3] overflow-hidden bg-brand-light">
-                  <Image
+                  <ProductImage
                     src={product.image_url}
                     alt={product.nome}
                     fill
@@ -57,13 +62,20 @@ export default function RelatedProductsGrid({ products }: RelatedProductsGridPro
                       {category.category}
                     </span>
                   ) : null}
+                  {subcategory ? (
+                    <span className="ml-2 inline-flex rounded-full bg-muted px-3 py-1 text-xs font-semibold text-muted-foreground">
+                      {subcategory.subcategoria}
+                    </span>
+                  ) : null}
 
                   <h3 className="mt-3 line-clamp-2 font-[var(--font-heading)] text-lg font-bold text-brand-dark transition-colors group-hover:text-brand-red">
                     {product.nome}
                   </h3>
-                  <p className="mt-2 line-clamp-2 text-sm text-brand-dark/65">
-                    {product.descricao}
-                  </p>
+                  {product.descricao ? (
+                    <p className="mt-2 line-clamp-2 text-sm text-brand-dark/65">
+                      {product.descricao}
+                    </p>
+                  ) : null}
                   <span className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-brand-red">
                     Ver detalhes <ArrowRight className="h-4 w-4" />
                   </span>

@@ -29,19 +29,18 @@ export async function updateSession(request: NextRequest) {
     },
   )
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  const { data } = await supabase.auth.getClaims()
+  const isAuthenticated = Boolean(data?.claims?.sub)
 
   // Protect /cliente routes - redirect to login if not authenticated
-  if (request.nextUrl.pathname.startsWith('/cliente') && !user) {
+  if (request.nextUrl.pathname.startsWith('/cliente') && !isAuthenticated) {
     const url = request.nextUrl.clone()
     url.pathname = '/auth/login'
     return NextResponse.redirect(url)
   }
 
   // Protect /admin routes - redirect to login if not authenticated
-  if (request.nextUrl.pathname.startsWith('/admin') && !user) {
+  if (request.nextUrl.pathname.startsWith('/admin') && !isAuthenticated) {
     const url = request.nextUrl.clone()
     url.pathname = '/auth/login'
     return NextResponse.redirect(url)

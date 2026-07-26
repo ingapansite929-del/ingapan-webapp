@@ -4,6 +4,9 @@ import { getLatestAdminOrders } from "@/features/orders/data";
 import type { AdminOrderSummary } from "@/features/orders/types";
 import { getAdminClientsAnalytics } from "@/features/clients/data";
 import type { AdminClientsAnalytics } from "@/features/clients/types";
+import { Badge } from "@/components/ui/badge";
+import { Card } from "@/components/ui/card";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 type SearchParams = Promise<{
   tab?: string | string[];
@@ -58,45 +61,34 @@ export default async function AdminClientsPage({ searchParams }: AdminClientsPag
   }
 
   return (
-    <section className="space-y-6 rounded-xl bg-white p-8 shadow-sm">
+    <section className="space-y-6">
       <div>
-        <span className="inline-flex rounded-lg bg-brand-red/10 px-2.5 py-1 text-xs font-semibold uppercase tracking-wide text-brand-red">
-          Módulo ativo
-        </span>
-        <h1 className="mt-4 text-2xl font-bold font-heading text-brand-dark">
+        <Badge variant="secondary">Relacionamento</Badge>
+        <h1 className="mt-3 text-3xl font-bold">
           Gestão de clientes
         </h1>
-        <p className="mt-3 max-w-2xl text-sm text-brand-dark/70">
+        <p className="mt-1 max-w-2xl text-muted-foreground">
           Acompanhe os pedidos recebidos via WhatsApp e monitore rapidamente os
           últimos movimentos.
         </p>
       </div>
 
-      <div className="flex flex-wrap gap-3 rounded-2xl border border-brand-dark/5 bg-brand-light/40 p-3">
-        <Link
-          href="/admin/clientes"
-          scroll={false}
-          className={`inline-flex items-center rounded-xl px-4 py-2 text-sm font-bold uppercase tracking-wide transition ${
-            activeTab === "pedidos"
-              ? "bg-brand-dark text-white"
-              : "bg-white text-brand-dark hover:bg-brand-light"
-          }`}
-        >
-          Pedidos de clientes
-        </Link>
-        <Link
-          href="/admin/clientes?tab=clientes"
-          scroll={false}
-          className={`inline-flex items-center rounded-xl px-4 py-2 text-sm font-bold uppercase tracking-wide transition ${
-            activeTab === "clientes"
-              ? "bg-brand-dark text-white"
-              : "bg-white text-brand-dark hover:bg-brand-light"
-          }`}
-        >
-          Clientes
-        </Link>
-      </div>
+      <Tabs value={activeTab}>
+        <TabsList>
+          <TabsTrigger value="pedidos" asChild>
+            <Link href="/admin/clientes" scroll={false}>
+              Pedidos
+            </Link>
+          </TabsTrigger>
+          <TabsTrigger value="clientes" asChild>
+            <Link href="/admin/clientes?tab=clientes" scroll={false}>
+              Clientes
+            </Link>
+          </TabsTrigger>
+        </TabsList>
+      </Tabs>
 
+      <Card className="p-5 sm:p-6">
       {activeTab === "pedidos" ? (
         <div className="space-y-4">
           <h2 className="text-lg font-semibold text-brand-dark">Últimos 10 pedidos</h2>
@@ -400,6 +392,7 @@ export default async function AdminClientsPage({ searchParams }: AdminClientsPag
           Nenhum dado de clientes disponível no momento.
         </div>
       )}
+      </Card>
     </section>
   );
 }

@@ -1,184 +1,211 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
-import { ChevronLeft, ChevronRight, Eye, Package, ShoppingCart } from "lucide-react";
+import { ArrowRight, PackageSearch, ShoppingCart } from "lucide-react";
+import { motion } from "motion/react";
+import ProductImage from "@/components/products/ProductImage";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  Empty,
+  EmptyContent,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@/components/ui/empty";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
+import {
+  buildProductsUrl,
+  getPaginationItems,
+  type ProductCatalogFilters,
+} from "@/features/products/catalog";
+import {
+  getProductCategory,
+  getProductSubcategory,
+  type ProductRecord,
+} from "@/features/products/types";
 import { useCart } from "@/lib/CartContext";
 
-interface Product {
-  id: number;
-  nome: string;
-  id_categoria: number;
-  descricao: string;
-  image_url: string;
-  product_categoria?: { id: number; category: string }[] | { id: number; category: string } | null;
-}
-
 interface ProductsGridProps {
-  products: Product[];
+  products: ProductRecord[];
   currentPage: number;
-  hasNextPage: boolean;
-  currentNome: string;
-  currentCategoria: string;
-}
-
-function buildUrl(page: number, nome: string, categoria: string) {
-  const params = new URLSearchParams();
-  if (page > 1) params.set("page", String(page));
-  if (nome) params.set("nome", nome);
-  if (categoria) params.set("categoria", categoria);
-  return `/produtos${params.toString() ? `?${params.toString()}` : ""}`;
+  pageCount: number;
+  total: number;
+  pageSize: number;
+  filters: ProductCatalogFilters;
 }
 
 export default function ProductsGrid({
   products,
   currentPage,
-  hasNextPage,
-  currentNome,
-  currentCategoria,
+  pageCount,
+  total,
+  pageSize,
+  filters,
 }: ProductsGridProps) {
   const { addItem } = useCart();
-  
-  const previousPageUrl = buildUrl(
-    Math.max(currentPage - 1, 1),
-    currentNome,
-    currentCategoria
-  );
-  const nextPageUrl = buildUrl(
-    currentPage + 1,
-    currentNome,
-    currentCategoria
-  );
 
   if (products.length === 0) {
     return (
-      <div className="flex min-h-[400px] flex-col items-center justify-center rounded-[1.55rem] border-2 border-dashed border-brand-dark/10 bg-white p-12 text-center">
-        <div className="mb-6 flex h-20 w-20 items-center justify-center rounded-2xl bg-brand-light shadow-inner">
-          <Package className="h-10 w-10 text-brand-dark/30" />
-        </div>
-        <h3 className="font-[var(--font-heading)] text-2xl font-bold tracking-[-0.01em] text-brand-dark">
-          Nenhum produto encontrado
-        </h3>
-        <p className="mt-2 max-w-[60ch] leading-relaxed text-brand-dark/60">
-          Não encontramos produtos com os filtros selecionados. Tente ajustar sua busca ou limpar os filtros.
-        </p>
-      </div>
+      <Empty className="min-h-96 border-2 bg-card">
+        <EmptyHeader>
+          <EmptyMedia variant="icon">
+            <PackageSearch />
+          </EmptyMedia>
+          <EmptyTitle>Nenhum produto encontrado</EmptyTitle>
+          <EmptyDescription>
+            Não encontramos produtos com essa combinação. Limpe os filtros e
+            tente novamente.
+          </EmptyDescription>
+        </EmptyHeader>
+        <EmptyContent>
+          <Button asChild variant="secondary">
+            <Link href="/produtos">Limpar filtros</Link>
+          </Button>
+        </EmptyContent>
+      </Empty>
     );
   }
 
+  const firstResult = (currentPage - 1) * pageSize + 1;
+  const lastResult = Math.min(currentPage * pageSize, total);
+  const paginationItems = getPaginationItems(currentPage, pageCount);
+
   return (
     <div className="space-y-8">
-      {/* Grid de Produtos */}
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-        {products.map((product) => (
-          <article
-            key={product.id}
-            className="group flex flex-col overflow-hidden rounded-[1.35rem] border border-brand-dark/10 bg-white shadow-[0_22px_38px_-32px_rgba(34,34,34,0.7)] transition-all duration-300 hover:-translate-y-1 hover:border-brand-yellow/50 hover:shadow-[0_28px_50px_-32px_rgba(34,34,34,0.85)]"
-          >
-            <Link href={`/produtos/${product.id}`} className="block">
-              {/* Imagem do Produto */}
-              <div className="relative aspect-[4/3] overflow-hidden bg-brand-light">
-                <Image
-                  src={product.image_url}
-                  alt={product.nome}
-                  fill
-                  className="object-cover transition-transform duration-500 group-hover:scale-110"
-                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, 25vw"
-                />
-                
-                {/* Badge da Categoria */}
-                {product.product_categoria && (
-                  <div className="absolute right-3 top-3">
-                  <span className="inline-block rounded-lg border border-brand-yellow/30 bg-white/95 px-3 py-1 text-xs font-bold uppercase tracking-wider text-brand-dark shadow-lg backdrop-blur-sm">
-                      {Array.isArray(product.product_categoria)
-                        ? product.product_categoria[0]?.category
-                        : product.product_categoria.category}
-                    </span>
+      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        {products.map((product) => {
+          const category = getProductCategory(product);
+          const subcategory = getProductSubcategory(product);
+
+          return (
+            <motion.article
+              key={product.id}
+              layout
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.24 }}
+              className="group flex min-w-0 flex-col overflow-hidden rounded-2xl border bg-card shadow-[var(--shadow-soft)] transition-[transform,box-shadow,border-color] duration-[var(--motion-normal)] hover:-translate-y-1 hover:border-brand-yellow hover:shadow-[var(--shadow-raised)]"
+            >
+              <Link
+                href={`/produtos/${product.id}`}
+                className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset"
+                aria-label={`Ver detalhes de ${product.nome}`}
+              >
+                <div className="relative aspect-[4/3] overflow-hidden bg-muted">
+                  <ProductImage
+                    src={product.image_url}
+                    alt={product.nome}
+                    fill
+                    className="object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, 25vw"
+                  />
+                </div>
+                <div className="space-y-3 p-5 pb-3">
+                  <div className="flex min-h-6 flex-wrap gap-1.5">
+                    {category ? (
+                      <Badge variant="secondary">{category.category}</Badge>
+                    ) : null}
+                    {subcategory ? (
+                      <Badge variant="outline">
+                        {subcategory.subcategoria}
+                      </Badge>
+                    ) : null}
                   </div>
-                )}
-              </div>
-
-              {/* Conteúdo do Card */}
-              <div className="flex flex-1 flex-col p-5">
-                <h3 className="line-clamp-2 font-[var(--font-heading)] text-lg font-bold tracking-[-0.01em] text-brand-dark transition-colors group-hover:text-brand-orange">
-                  {product.nome}
-                </h3>
-                
-                <p className="mt-2 flex-1 text-sm leading-relaxed text-brand-dark/60 line-clamp-3">
-                  {product.descricao}
-                </p>
-              </div>
-            </Link>
-
-            {/* Ação */}
-            <div className="mt-auto flex items-center justify-between border-t border-brand-dark/5 p-5 pt-4">
-              <span className="text-xs font-bold uppercase tracking-wider text-brand-dark/40">
-                Cód. #{product.id}
-              </span>
-              <div className="flex items-center gap-2">
-                <Link
-                  href={`/produtos/${product.id}`}
-                  className="inline-flex items-center gap-1.5 rounded-lg border border-brand-dark/15 px-3.5 py-2 text-sm font-semibold text-brand-dark transition-all hover:border-brand-red/30 hover:text-brand-red active:translate-y-px"
-                >
-                  <Eye className="h-4 w-4" />
-                  Detalhes
-                </Link>
-                <button
+                  <div>
+                    <h2 className="line-clamp-2 text-lg font-bold leading-snug transition-colors group-hover:text-brand-red">
+                      {product.nome}
+                    </h2>
+                    <p className="mt-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                      Cód. #{product.id}
+                    </p>
+                  </div>
+                  {product.descricao ? (
+                    <p className="line-clamp-2 text-sm leading-relaxed text-muted-foreground">
+                      {product.descricao}
+                    </p>
+                  ) : null}
+                  <span className="inline-flex items-center gap-1 text-sm font-semibold text-primary">
+                    Ver detalhes <ArrowRight className="size-4" />
+                  </span>
+                </div>
+              </Link>
+              <div className="mt-auto p-5 pt-2">
+                <Button
+                  type="button"
+                  variant="secondary"
+                  className="w-full"
                   onClick={() => addItem(product)}
-                  className="flex items-center gap-1.5 rounded-lg bg-brand-yellow px-4 py-2 text-sm font-bold text-brand-dark transition-all hover:bg-brand-yellow/90 hover:shadow-[0_16px_28px_-20px_rgba(249,207,0,0.8)] active:scale-95"
                 >
-                  <ShoppingCart className="h-4 w-4" />
-                  Adicionar
-                </button>
+                  <ShoppingCart />
+                  Adicionar ao orçamento
+                </Button>
               </div>
-            </div>
-
-            {/* Barra decorativa inferior */}
-            <div className="h-1 w-full bg-gradient-to-r from-brand-yellow via-brand-orange to-brand-red"></div>
-          </article>
-        ))}
+            </motion.article>
+          );
+        })}
       </div>
 
-      {/* Paginação */}
-      <div className="flex items-center justify-between rounded-[1.5rem] border border-brand-dark/10 bg-white p-6 shadow-[0_20px_38px_-34px_rgba(34,34,34,0.7)]">
-        <Link
-          href={previousPageUrl}
-          className={`group flex items-center gap-2 rounded-xl px-5 py-3 font-semibold transition-all ${
-            currentPage > 1
-              ? "bg-brand-dark text-white hover:bg-brand-dark/90 hover:shadow-[0_18px_30px_-22px_rgba(34,34,34,0.9)]"
-              : "pointer-events-none bg-brand-light text-brand-dark/30"
-          }`}
-        >
-          <ChevronLeft className="h-5 w-5 transition-transform group-hover:-translate-x-1" />
-          <span className="hidden sm:inline">Anterior</span>
-        </Link>
-
-        <div className="flex flex-col items-center">
-          <span className="text-xs font-bold uppercase tracking-wider text-brand-dark/50">
-            Página
-          </span>
-          <span className="mt-1 font-[var(--font-heading)] text-2xl font-bold text-brand-dark">
-            {currentPage}
-          </span>
-        </div>
-
-        <Link
-          href={nextPageUrl}
-          className={`group flex items-center gap-2 rounded-xl px-5 py-3 font-semibold transition-all ${
-            hasNextPage
-              ? "bg-brand-dark text-white hover:bg-brand-dark/90 hover:shadow-[0_18px_30px_-22px_rgba(34,34,34,0.9)]"
-              : "pointer-events-none bg-brand-light text-brand-dark/30"
-          }`}
-        >
-          <span className="hidden sm:inline">Próxima</span>
-          <ChevronRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
-        </Link>
+      <div className="flex flex-col items-center justify-between gap-4 rounded-2xl border bg-card p-4 shadow-[var(--shadow-soft)] sm:flex-row">
+        <p className="text-sm text-muted-foreground" aria-live="polite">
+          Exibindo <strong className="text-foreground">{firstResult}</strong>–
+          <strong className="text-foreground">{lastResult}</strong> de{" "}
+          <strong className="text-foreground">{total}</strong>
+        </p>
+        <Pagination className="mx-0 w-auto">
+          <PaginationContent>
+            <PaginationItem>
+              <PaginationPrevious
+                href={buildProductsUrl(filters, Math.max(1, currentPage - 1))}
+                aria-label="Ir para a página anterior"
+                className={
+                  currentPage === 1 ? "pointer-events-none opacity-40" : ""
+                }
+              />
+            </PaginationItem>
+            {paginationItems.map((item, index) =>
+              item === "ellipsis" ? (
+                <PaginationItem key={`ellipsis-${index}`}>
+                  <PaginationEllipsis />
+                </PaginationItem>
+              ) : (
+                <PaginationItem key={item}>
+                  <PaginationLink
+                    href={buildProductsUrl(filters, item)}
+                    isActive={item === currentPage}
+                    aria-label={`Ir para a página ${item}`}
+                  >
+                    {item}
+                  </PaginationLink>
+                </PaginationItem>
+              )
+            )}
+            <PaginationItem>
+              <PaginationNext
+                href={buildProductsUrl(
+                  filters,
+                  Math.min(pageCount, currentPage + 1)
+                )}
+                aria-label="Ir para a próxima página"
+                className={
+                  currentPage === pageCount
+                    ? "pointer-events-none opacity-40"
+                    : ""
+                }
+              />
+            </PaginationItem>
+          </PaginationContent>
+        </Pagination>
       </div>
-
-      {/* Info da Paginação */}
-      <p className="text-center text-sm text-brand-dark/60">
-        Exibindo {products.length} produto{products.length !== 1 ? "s" : ""} por página
-      </p>
     </div>
   );
 }
