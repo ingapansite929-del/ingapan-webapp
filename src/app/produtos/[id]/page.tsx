@@ -62,7 +62,6 @@ function RelatedProductsSkeleton() {
   );
 }
 
-
 function truncateDescription(description: string | null): string {
   const normalized =
     description?.trim() ||
@@ -143,7 +142,6 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
   const category = getProductCategory(product);
   const subcategory = getProductSubcategory(product);
   const imageUrl = getSafeImageUrl(product.image_url);
-  const relatedProducts = await getRelatedProducts(product.id, product.id_categoria);
   const siteUrl = getSiteUrl();
   const productUrl = `${siteUrl}/produtos/${product.id}`;
   const jsonLd = {

@@ -9,7 +9,6 @@ test("catálogo abre sem overflow e preserva filtros na paginação", async ({
     if (message.type() === "error") consoleErrors.push(message.text());
     if (message.type() === "warning") consoleWarnings.push(message.text());
   });
-  });
 
   await page.goto("/produtos");
   await expect(

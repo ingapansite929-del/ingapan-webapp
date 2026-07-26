@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
+import { Suspense } from "react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import ProductsGrid from "@/components/ProductsGrid";
-import ProductsFilters from "@/components/ProductsFilters";
+import ProductsCatalogClient from "@/components/products/ProductsCatalogClient";
+import ProductsCatalogSkeleton from "@/components/products/ProductsCatalogSkeleton";
 import {
   buildProductsUrl,
   getSingleSearchValue,
@@ -79,7 +80,7 @@ export async function generateMetadata({
   };
 }
 
-export default async function ProductsPage({
+async function ProductsCatalog({
   searchParams,
 }: ProductsPageProps) {
   const params = await searchParams;
@@ -120,41 +121,6 @@ export default async function ProductsPage({
   productsRequest = productsRequest
     .order(orderColumn, { ascending })
     .range(from, from + PRODUCT_PAGE_SIZE - 1);
-  const [categoriesResult, subcategoriesResult, productsResult] =
-    await Promise.all([
-      categoriesRequest,
-      subcategoriesRequest,
-      productsRequest,
-    ]);
-
-  if (categoriesResult.error) {
-    throw new Error(
-      `Não foi possível carregar as categorias: ${categoriesResult.error.message}`
-    );
-  }
-  if (subcategoriesResult.error) {
-    throw new Error(
-      `Não foi possível carregar as subcategorias: ${subcategoriesResult.error.message}`
-    );
-  }
-  if (productsResult.error) {
-    throw new Error(
-      `Não foi possível carregar os produtos: ${productsResult.error.message}`
-    );
-  }
-
-  const total = productsResult.count ?? 0;
-  const pageCount = Math.max(1, Math.ceil(total / PRODUCT_PAGE_SIZE));
-  if (total > 0 && requestedPage > pageCount) {
-    redirect(buildProductsUrl(filters, pageCount));
-  }
-
-  const categories =
-    (categoriesResult.data as ProductCategoryOption[] | null) ?? [];
-  const subcategories =
-    (subcategoriesResult.data as ProductSubcategoryOption[] | null) ?? [];
-  const products = parseProductRecords(productsResult.data);
-
 
   const [categoriesResult, subcategoriesResult, productsResult] =
     await Promise.all([
@@ -231,21 +197,9 @@ export default function ProductsPage({ searchParams }: ProductsPageProps) {
         </section>
 
         <section className="mx-auto max-w-[90rem] px-4 py-8 sm:px-6 lg:px-10">
-          <ProductsFilters
-            key={buildProductsUrl(filters)}
-            categories={categories}
-            subcategories={subcategories}
-            filters={filters}
-            total={total}
-          />
-          <ProductsGrid
-            products={products}
-            currentPage={requestedPage}
-            pageCount={pageCount}
-            total={total}
-            pageSize={PRODUCT_PAGE_SIZE}
-            filters={filters}
-          />
+          <Suspense fallback={<ProductsCatalogSkeleton />}>
+            <ProductsCatalog searchParams={searchParams} />
+          </Suspense>
         </section>
       </main>
       <Footer />
