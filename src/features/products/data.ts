@@ -1,9 +1,13 @@
 import { cache } from "react";
 import { createClient } from "@/lib/supabase/server";
-import type { ProductRecord } from "@/features/products/types";
+import {
+  parseProductRecord,
+  parseProductRecords,
+  type ProductRecord,
+} from "@/features/products/types";
 
-const PRODUCT_SELECT =
-  "id, nome, id_categoria, descricao, image_url, product_categoria(id, category)";
+export const PRODUCT_SELECT =
+  "id, nome, id_categoria, id_subcategoria, descricao, image_url, product_categoria(id, category), product_subcategory(id, subcategoria)";
 
 export function parseProductId(rawId: string): number | null {
   const productId = Number(rawId);
@@ -26,12 +30,17 @@ export const getProductById = cache(
       throw new Error(`Erro ao buscar produto ${productId}: ${error.message}`);
     }
 
-    return (data as ProductRecord | null) ?? null;
+    return parseProductRecord(data);
   }
 );
 
 export const getRelatedProducts = cache(
-  async (productId: number, categoryId: number): Promise<ProductRecord[]> => {
+  async (
+    productId: number,
+    categoryId: number | null
+  ): Promise<ProductRecord[]> => {
+    if (!categoryId) return [];
+
     const supabase = await createClient();
     const { data, error } = await supabase
       .from("products")
@@ -47,6 +56,6 @@ export const getRelatedProducts = cache(
       );
     }
 
-    return (data as ProductRecord[]) ?? [];
+    return parseProductRecords(data);
   }
 );

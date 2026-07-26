@@ -2,18 +2,13 @@
 
 import { createContext, useContext, useEffect, useRef, useState } from "react";
 import { useToast } from "@/components/Toast";
-
-interface Product {
-  id: number;
-  nome: string;
-  image_url: string;
-  id_categoria: number;
-  descricao: string;
-  product_categoria?: { id: number; category: string }[] | { id: number; category: string } | null;
-}
+import {
+  parseProductRecord,
+  type ProductRecord,
+} from "@/features/products/types";
 
 export interface CartItem {
-  product: Product;
+  product: ProductRecord;
   quantity: number;
 }
 
@@ -21,7 +16,7 @@ interface CartContextType {
   items: CartItem[];
   isOpen: boolean;
   itemCount: number;
-  addItem: (product: Product) => void;
+  addItem: (product: ProductRecord) => void;
   removeItem: (productId: number) => void;
   updateQuantity: (productId: number, quantity: number) => void;
   clearCart: () => void;
@@ -45,7 +40,16 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
     try {
       const parsedCart: unknown = JSON.parse(savedCart);
-      return Array.isArray(parsedCart) ? (parsedCart as CartItem[]) : [];
+      if (!Array.isArray(parsedCart)) return [];
+      return parsedCart.flatMap((item) => {
+        if (!item || typeof item !== "object") return [];
+        const candidate = item as { product?: unknown; quantity?: unknown };
+        const product = parseProductRecord(candidate.product);
+        const quantity = Number(candidate.quantity);
+        return product && Number.isInteger(quantity) && quantity > 0
+          ? [{ product, quantity }]
+          : [];
+      });
     } catch (e) {
       console.error("Failed to parse cart from localStorage", e);
       return [];
@@ -67,7 +71,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem("cart-storage", JSON.stringify(items));
   }, [items]);
 
-  const addItem = (product: Product) => {
+  const addItem = (product: ProductRecord) => {
     setItems((currentItems) => {
       const existingItem = currentItems.find((item) => item.product.id === product.id);
       

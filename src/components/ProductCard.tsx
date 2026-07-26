@@ -1,12 +1,13 @@
-import Image from "next/image";
 import Link from "next/link";
 import type { ProductCategory } from "@/types";
+import ProductImage from "@/components/products/ProductImage";
 
 interface ProductCardProps {
   product: ProductCategory;
+  priority?: boolean;
 }
 
-export default function ProductCard({ product }: ProductCardProps) {
+export default function ProductCard({ product, priority = false }: ProductCardProps) {
   const hasProductDetailPage = /^\d+$/.test(product.id);
 
   return (
@@ -16,10 +17,11 @@ export default function ProductCard({ product }: ProductCardProps) {
         className="block"
       >
         <div className="relative aspect-[4/3] overflow-hidden">
-          <Image
+          <ProductImage
             src={product.image}
             alt={product.name}
             fill
+            loading={priority ? "eager" : "lazy"}
             className="object-cover transition-transform duration-500 group-hover:scale-105"
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
           />

@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Clock3, ShieldCheck, Truck } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import ProductDetailActions from "@/components/products/ProductDetailActions";
+import ProductImage from "@/components/products/ProductImage";
 import ProductViewTracker from "@/components/products/ProductViewTracker";
 import RelatedProductsGrid from "@/components/products/RelatedProductsGrid";
 import {
@@ -13,16 +13,24 @@ import {
   getRelatedProducts,
   parseProductId,
 } from "@/features/products/data";
-import { getProductCategory } from "@/features/products/types";
+import {
+  getProductCategory,
+  getProductDescription,
+  getProductSubcategory,
+  getSafeImageUrl,
+} from "@/features/products/types";
 import { getSiteUrl } from "@/lib/seo";
 
 interface ProductDetailPageProps {
   params: Promise<{ id: string }>;
 }
 
-function truncateDescription(description: string): string {
-  if (description.length <= 155) return description;
-  return `${description.slice(0, 152)}...`;
+function truncateDescription(description: string | null): string {
+  const normalized =
+    description?.trim() ||
+    "Consulte a IngaPan para conhecer detalhes, disponibilidade e condições deste produto.";
+  if (normalized.length <= 155) return normalized;
+  return `${normalized.slice(0, 152)}...`;
 }
 
 export async function generateMetadata({
@@ -32,7 +40,7 @@ export async function generateMetadata({
   const productId = parseProductId(id);
   if (!productId) {
     return {
-      title: "Produto | Ingapan",
+      title: "Produto",
       description: "Detalhes do produto no catálogo Ingapan.",
       robots: {
         index: false,
@@ -44,7 +52,7 @@ export async function generateMetadata({
   const product = await getProductById(productId);
   if (!product) {
     return {
-      title: "Produto não encontrado | Ingapan",
+      title: "Produto não encontrado",
       description: "Produto não encontrado no catálogo Ingapan.",
       robots: {
         index: false,
@@ -55,9 +63,10 @@ export async function generateMetadata({
 
   const canonicalPath = `/produtos/${product.id}`;
   const description = truncateDescription(product.descricao);
+  const imageUrl = getSafeImageUrl(product.image_url);
 
   return {
-    title: `${product.nome} | Ingapan`,
+    title: product.nome,
     description,
     alternates: {
       canonical: canonicalPath,
@@ -67,18 +76,15 @@ export async function generateMetadata({
       description,
       url: canonicalPath,
       type: "article",
-      images: [
-        {
-          url: product.image_url,
-          alt: product.nome,
-        },
-      ],
+      ...(imageUrl
+        ? { images: [{ url: imageUrl, alt: product.nome }] }
+        : {}),
     },
     twitter: {
       card: "summary_large_image",
       title: `${product.nome} | Ingapan`,
       description,
-      images: [product.image_url],
+      ...(imageUrl ? { images: [imageUrl] } : {}),
     },
   };
 }
@@ -97,6 +103,8 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
   }
 
   const category = getProductCategory(product);
+  const subcategory = getProductSubcategory(product);
+  const imageUrl = getSafeImageUrl(product.image_url);
   const relatedProducts = await getRelatedProducts(product.id, product.id_categoria);
   const siteUrl = getSiteUrl();
   const productUrl = `${siteUrl}/produtos/${product.id}`;
@@ -104,8 +112,8 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
     "@context": "https://schema.org",
     "@type": "Product",
     name: product.nome,
-    description: product.descricao,
-    image: [product.image_url],
+    description: getProductDescription(product),
+    ...(imageUrl ? { image: [imageUrl] } : {}),
     url: productUrl,
     brand: {
       "@type": "Brand",
@@ -175,12 +183,13 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
           <article className="overflow-hidden rounded-3xl border border-brand-dark/10 bg-white shadow-xl shadow-black/5">
             <div className="grid gap-0 lg:grid-cols-2">
               <div className="relative min-h-[320px] bg-brand-light sm:min-h-[420px]">
-                <Image
+                <ProductImage
                   src={product.image_url}
                   alt={product.nome}
                   fill
                   className="object-cover"
                   priority
+                  loading="eager"
                   sizes="(max-width: 1024px) 100vw, 50vw"
                 />
               </div>
@@ -192,6 +201,11 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
                       {category.category}
                     </span>
                   ) : null}
+                  {subcategory ? (
+                    <span className="inline-flex rounded-full border border-border bg-muted px-3 py-1 text-xs font-bold uppercase tracking-wide text-muted-foreground">
+                      {subcategory.subcategoria}
+                    </span>
+                  ) : null}
                   <span className="inline-flex rounded-full border border-brand-dark/15 px-3 py-1 text-xs font-bold uppercase tracking-wide text-brand-dark/70">
                     Cód. #{product.id}
                   </span>
@@ -200,9 +214,11 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
                 <h1 className="mt-4 font-[var(--font-heading)] text-3xl font-bold leading-tight text-brand-dark md:text-4xl">
                   {product.nome}
                 </h1>
-                <p className="mt-4 text-base leading-relaxed text-brand-dark/75 md:text-lg">
-                  {product.descricao}
-                </p>
+                {product.descricao ? (
+                  <p className="mt-4 text-base leading-relaxed text-brand-dark/75 md:text-lg">
+                    {product.descricao}
+                  </p>
+                ) : null}
 
                 <div className="mt-7 grid gap-3 sm:grid-cols-3">
                   <div className="rounded-xl border border-brand-dark/10 bg-brand-light/60 p-3">

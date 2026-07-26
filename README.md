@@ -1,36 +1,66 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# IngaPan Webapp
 
-## Getting Started
+Aplicação web da IngaPan para dois públicos:
 
-First, run the development server:
+- clientes que pesquisam produtos e montam uma solicitação de orçamento;
+- colaboradores que administram catálogo, destaques, pedidos e clientes.
+
+O produto prioriza uma experiência simples, responsiva e previsível. Toda
+interação assíncrona deve comunicar seu estado e toda tela de dados deve prever
+carregamento, vazio e erro.
+
+## Stack
+
+- Next.js 16 com App Router e React 19;
+- TypeScript e Tailwind CSS 4;
+- shadcn/ui com Radix, estilo `new-york`;
+- Motion para transições funcionais;
+- Zod para contratos de entrada e dados externos;
+- Supabase SSR para autenticação e acesso aos dados existentes;
+- Vitest, Testing Library e Playwright.
+
+## Instalação
+
+Requisitos: Node.js 20+ e npm.
 
 ```bash
+npm install
+cp .env.example .env.local
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+A aplicação fica disponível em [http://localhost:3000](http://localhost:3000).
+Preencha as variáveis públicas do Supabase conforme o ambiente fornecido pela
+equipe. Nunca registre credenciais ou sessões administrativas no repositório.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Scripts
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm run dev        # desenvolvimento
+npm run lint       # ESLint
+npm run typecheck  # TypeScript
+npm run test       # testes unitários/componentes
+npm run test:e2e   # Playwright em 390, 768, 1024 e 1440 px
+npm run build      # build de produção
+npm run check      # validação local completa
+```
 
-## Learn More
+## Arquitetura
 
-To learn more about Next.js, take a look at the following resources:
+- `src/app`: rotas, layouts, boundaries, metadata e Server Components;
+- `src/components/ui`: componentes shadcn mantidos no repositório;
+- `src/components/products`: componentes defensivos do domínio de produtos;
+- `src/components/admin`: shell e workspaces administrativos;
+- `src/features`: contratos, consultas e regras de apresentação por domínio;
+- `src/lib`: integrações e utilitários compartilhados;
+- `docs`: decisões de interface, arquitetura e padrões de UX.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+O banco e suas políticas são contratos externos. Alterações de schema, RLS,
+migrations ou dados não pertencem ao escopo padrão do frontend.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Documentação
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- [Sistema de interface](docs/interface-design-system.md)
+- [Arquitetura frontend](docs/frontend-architecture.md)
+- [Padrões de UX](docs/ux-patterns.md)
+- [Contrato para agentes](AGENTS.md)

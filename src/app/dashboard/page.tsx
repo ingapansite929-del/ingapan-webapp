@@ -6,6 +6,9 @@ import { Suspense } from "react";
 import { createClient } from "@/lib/supabase/server";
 import { isAdminRole } from "@/lib/auth/admin";
 import LogoutButton from "@/components/LogoutButton";
+import AdminShell from "@/components/admin/AdminShell";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import TopViewedProductsCard, {
   TopViewedProductsCardSkeleton,
 } from "@/components/admin/TopViewedProductsCard";
@@ -57,6 +60,67 @@ export default async function DashboardPage() {
     }
   }
 
+  if (isAdmin) {
+    const adminName = cliente?.nome || user.email || "Administrador";
+    return (
+      <AdminShell adminName={adminName}>
+        <div className="space-y-6">
+          <div>
+            <Badge variant="secondary">Visão geral</Badge>
+            <h1 className="mt-3 text-3xl font-bold">Painel administrativo</h1>
+            <p className="mt-1 text-muted-foreground">
+              Indicadores rápidos e acesso aos módulos de gestão.
+            </p>
+          </div>
+
+          <section className="grid gap-4 xl:grid-cols-2">
+            <Suspense fallback={<TopViewedProductsCardSkeleton />}>
+              <TopViewedProductsCard />
+            </Suspense>
+            <Suspense fallback={<TopOrderedProductsCardSkeleton />}>
+              <TopOrderedProductsCard />
+            </Suspense>
+          </section>
+
+          <section className="grid gap-4 md:grid-cols-2">
+            <Card>
+              <CardHeader>
+                <CardTitle>Produtos</CardTitle>
+                <CardDescription>
+                  Cadastro, edição, filtros e produtos em destaque.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Link
+                  href="/admin/products"
+                  className="text-sm font-semibold text-brand-red hover:underline"
+                >
+                  Acessar gestão de produtos →
+                </Link>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader>
+                <CardTitle>Clientes</CardTitle>
+                <CardDescription>
+                  Pedidos, engajamento e indicadores dos clientes.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Link
+                  href="/admin/clientes"
+                  className="text-sm font-semibold text-brand-red hover:underline"
+                >
+                  Acessar gestão de clientes →
+                </Link>
+              </CardContent>
+            </Card>
+          </section>
+        </div>
+      </AdminShell>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-brand-light">
       {/* Header */}
@@ -68,7 +132,7 @@ export default async function DashboardPage() {
                 src="/images/LOGO.png"
                 alt="IngaPan"
                 width={120}
-                height={80}
+                height={81}
                 className="h-10 w-auto"
                 priority
               />

@@ -1,13 +1,11 @@
 import type { Metadata } from "next";
 import { Montserrat, Outfit } from "next/font/google";
 import "./globals.css";
-import { CartProvider } from "@/lib/CartContext";
-import CartSidebar from "@/components/CartSidebar";
-import { ToastProvider } from "@/components/Toast";
+import AppProviders from "@/components/AppProviders";
 import { getSiteUrlObject } from "@/lib/seo";
 
 const outfit = Outfit({
-  variable: "--font-inter",
+  variable: "--font-outfit",
   subsets: ["latin"],
   display: "swap",
 });
@@ -70,22 +68,18 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="pt-BR">
-      <body
-        className={`${outfit.variable} ${montserrat.variable} antialiased`}
-      >
+    <html
+      lang="pt-BR"
+      className={`${outfit.variable} ${montserrat.variable}`}
+    >
+      <body className="antialiased">
         <a
           href="#conteudo-principal"
           className="sr-only z-[70] rounded-md bg-brand-yellow px-4 py-2 font-semibold text-brand-dark focus:not-sr-only focus:fixed focus:left-4 focus:top-4"
         >
           Ir para o conteúdo principal
         </a>
-        <ToastProvider>
-          <CartProvider>
-            {children}
-            <CartSidebar />
-          </CartProvider>
-        </ToastProvider>
+        <AppProviders>{children}</AppProviders>
       </body>
     </html>
   );

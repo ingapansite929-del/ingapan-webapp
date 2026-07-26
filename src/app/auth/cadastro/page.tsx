@@ -115,7 +115,7 @@ export default function CadastroPage() {
                 src="/images/LOGO.png"
                 alt="IngaPan"
                 width={150}
-                height={100}
+                height={102}
                 priority
               />
             </Link>
@@ -268,7 +268,7 @@ export default function CadastroPage() {
               src="/images/LOGO.png"
               alt="IngaPan"
               width={200}
-              height={135}
+              height={136}
               className="brightness-0 invert"
               priority
             />

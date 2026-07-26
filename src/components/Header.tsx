@@ -24,7 +24,6 @@ export default function Header({ initialUser = null }: HeaderProps) {
 
   // Determina nível de scroll: 0 = topo (0-20px), 1 = pouco (20-100px), 2 = bastante (100px+)
   const scrollLevel = scrollY < 20 ? 0 : scrollY < 100 ? 1 : 2;
-  const isScrolled = scrollLevel > 0;
 
   useEffect(() => {
     let ticking = false;
@@ -112,7 +111,7 @@ export default function Header({ initialUser = null }: HeaderProps) {
               <div className="h-6 w-px bg-black/10" />
 
               {/* User Menu */}
-              <UserMenu isScrolled={isScrolled} initialUser={initialUser} scrollLevel={scrollLevel} />
+              <UserMenu initialUser={initialUser} scrollLevel={scrollLevel} />
 
               {/* Cart Button */}
               <button
@@ -156,7 +155,7 @@ export default function Header({ initialUser = null }: HeaderProps) {
               </button>
 
               {/* User Menu Mobile */}
-              <UserMenu isScrolled={isScrolled} initialUser={initialUser} scrollLevel={scrollLevel} />
+              <UserMenu initialUser={initialUser} scrollLevel={scrollLevel} />
 
               {/* Mobile Menu Toggle */}
               <button

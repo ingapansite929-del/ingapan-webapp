@@ -10,7 +10,7 @@ export default function AuthErrorPage() {
             src="/images/LOGO.png"
             alt="IngaPan"
             width={150}
-            height={100}
+            height={102}
             priority
           />
         </Link>

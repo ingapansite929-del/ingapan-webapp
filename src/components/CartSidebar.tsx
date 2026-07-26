@@ -2,14 +2,17 @@
 
 import { useCart } from "@/lib/CartContext";
 import { X, Plus, Minus, Trash2, Send } from "lucide-react";
-import Image from "next/image";
+import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useRef, useState } from "react";
 import { SOCIAL_LINKS } from "@/lib/constants";
 import { useToast } from "@/components/Toast";
+import ProductImage from "@/components/products/ProductImage";
+import { Button } from "@/components/ui/button";
+import { Spinner } from "@/components/ui/spinner";
 
 export default function CartSidebar() {
   const { items, isOpen, closeCart, updateQuantity, removeItem, itemCount } = useCart();
-  const sidebarRef = useRef<HTMLDivElement>(null);
+  const sidebarRef = useRef<HTMLElement>(null);
   const [isSubmittingCheckout, setIsSubmittingCheckout] = useState(false);
   const { addToast } = useToast();
 
@@ -88,28 +91,38 @@ export default function CartSidebar() {
   };
 
   return (
-    <>
-      {/* Overlay */}
-      <div
-        className={`fixed inset-0 z-[60] bg-black/50 transition-opacity duration-300 ${
-          isOpen ? "opacity-100 visible" : "opacity-0 invisible"
-        }`}
-      />
+    <AnimatePresence>
+      {isOpen ? (
+        <>
+          <motion.div
+            className="fixed inset-0 z-[60] bg-black/50"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={closeCart}
+            aria-hidden="true"
+          />
 
-      {/* Sidebar */}
-      <div
-        ref={sidebarRef}
-        className={`fixed inset-y-0 right-0 z-[70] flex w-full max-w-md flex-col bg-white shadow-2xl transition-transform duration-300 ${
-          isOpen ? "translate-x-0" : "translate-x-full"
-        }`}
-      >
+          <motion.aside
+            ref={sidebarRef}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="cart-title"
+            className="fixed inset-y-0 right-0 z-[70] flex w-full max-w-md flex-col bg-white shadow-2xl"
+            initial={{ x: "100%" }}
+            animate={{ x: 0 }}
+            exit={{ x: "100%" }}
+            transition={{ type: "spring", stiffness: 360, damping: 36 }}
+          >
         {/* Header */}
         <div className="flex items-center justify-between border-b border-gray-100 p-5">
-          <h2 className="font-[var(--font-heading)] text-xl font-bold text-brand-dark">
+          <h2 id="cart-title" className="font-[var(--font-heading)] text-xl font-bold text-brand-dark">
             Meu Carrinho ({itemCount})
           </h2>
           <button
+            type="button"
             onClick={closeCart}
+            aria-label="Fechar carrinho"
             className="rounded-full p-2 text-gray-500 transition-colors hover:bg-gray-100 hover:text-brand-red"
           >
             <X className="h-6 w-6" />
@@ -144,7 +157,7 @@ export default function CartSidebar() {
                   className="flex gap-4 rounded-xl border border-gray-100 bg-white p-3 shadow-sm transition-all hover:border-brand-yellow/30 hover:shadow-md"
                 >
                   <div className="relative h-20 w-20 flex-shrink-0 overflow-hidden rounded-lg bg-gray-100">
-                    <Image
+                    <ProductImage
                       src={item.product.image_url}
                       alt={item.product.nome}
                       fill
@@ -166,7 +179,9 @@ export default function CartSidebar() {
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3 rounded-lg bg-gray-50 px-2 py-1">
                         <button
+                          type="button"
                           onClick={() => updateQuantity(item.product.id, item.quantity - 1)}
+                          aria-label={`Diminuir quantidade de ${item.product.nome}`}
                           className="rounded p-1 text-gray-500 hover:bg-white hover:text-brand-red hover:shadow-sm"
                         >
                           <Minus className="h-3 w-3" />
@@ -175,7 +190,9 @@ export default function CartSidebar() {
                           {item.quantity}
                         </span>
                         <button
+                          type="button"
                           onClick={() => updateQuantity(item.product.id, item.quantity + 1)}
+                          aria-label={`Aumentar quantidade de ${item.product.nome}`}
                           className="rounded p-1 text-gray-500 hover:bg-white hover:text-brand-olive hover:shadow-sm"
                         >
                           <Plus className="h-3 w-3" />
@@ -183,7 +200,9 @@ export default function CartSidebar() {
                       </div>
                       
                       <button
+                        type="button"
                         onClick={() => removeItem(item.product.id)}
+                        aria-label={`Remover ${item.product.nome}`}
                         className="rounded-lg p-2 text-gray-400 hover:bg-red-50 hover:text-red-500"
                         title="Remover item"
                       >
@@ -205,22 +224,24 @@ export default function CartSidebar() {
               <span className="font-bold text-brand-dark">{itemCount} itens</span>
             </div>
             
-            <button
+            <Button
               onClick={handleWhatsAppCheckout}
               disabled={isSubmittingCheckout}
-              className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#25D366] px-6 py-4 font-bold text-white transition-all hover:bg-[#20bd5a] hover:shadow-lg hover:shadow-green-900/20 active:scale-[0.98] disabled:cursor-not-allowed disabled:bg-[#8ad9ac] disabled:shadow-none"
+              className="w-full bg-[var(--brand-whatsapp)] py-6 text-white hover:opacity-90"
             >
-              <Send className="h-5 w-5" />
+              {isSubmittingCheckout ? <Spinner /> : <Send className="h-5 w-5" />}
               {isSubmittingCheckout
                 ? "Registrando pedido..."
                 : "Solicitar Orçamento via WhatsApp"}
-            </button>
+            </Button>
             <p className="mt-3 text-center text-xs text-gray-500">
               Você será redirecionado para o WhatsApp para confirmar o pedido.
             </p>
           </div>
         )}
-      </div>
-    </>
+          </motion.aside>
+        </>
+      ) : null}
+    </AnimatePresence>
   );
 }
