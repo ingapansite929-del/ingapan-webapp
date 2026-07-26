@@ -145,7 +145,33 @@ function getVisibleCartTarget(): DOMRect | null {
 }
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
-  const [items, setItems] = useState<CartItem[]>([]);
+  const [items, setItems] = useState<CartItem[]>(() => {
+    if (typeof window === "undefined") {
+      return [];
+    }
+
+    const savedCart = localStorage.getItem("cart-storage");
+    if (!savedCart) {
+      return [];
+    }
+
+    try {
+      const parsedCart: unknown = JSON.parse(savedCart);
+      if (!Array.isArray(parsedCart)) return [];
+      return parsedCart.flatMap((item) => {
+        if (!item || typeof item !== "object") return [];
+        const candidate = item as { product?: unknown; quantity?: unknown };
+        const product = parseProductRecord(candidate.product);
+        const quantity = Number(candidate.quantity);
+        return product && Number.isInteger(quantity) && quantity > 0
+          ? [{ product, quantity }]
+          : [];
+      });
+    } catch (e) {
+      console.error("Failed to parse cart from localStorage", e);
+      return [];
+    }
+  });
   const [isOpen, setIsOpen] = useState(false);
   const [flight, setFlight] = useState<CartFlight | null>(null);
   const { addToast } = useToast();

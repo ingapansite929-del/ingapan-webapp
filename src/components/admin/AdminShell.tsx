@@ -199,6 +199,9 @@ export default function AdminShell({
           </Link>
         </Button>
       </aside>
+          </Link>
+        </Button>
+      </aside>
 
       <div className="min-w-0">
         <header className="sticky top-0 z-40 flex h-16 items-center gap-3 border-b bg-background/95 px-4 backdrop-blur sm:px-6 lg:px-8">
@@ -232,7 +235,10 @@ export default function AdminShell({
             </SheetContent>
           </Sheet>
 
-          <div className="min-w-0 flex-1" />
+          <div className="min-w-0 flex-1">
+            <p className="text-xs text-muted-foreground">Painel administrativo</p>
+            <p className="truncate text-sm font-semibold">{currentLabel}</p>
+          </div>
           <div className="hidden text-right sm:block">
             <p className="max-w-44 truncate text-sm font-medium">{displayName}</p>
             <p className="text-xs text-muted-foreground">Administrador</p>

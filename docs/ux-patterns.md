@@ -12,11 +12,13 @@
 
 - criar e editar usam o mesmo formulário em Sheet largo no desktop e integral
   no mobile;
+- visualizar abre a rota pública em endereço estável;
 - excluir sempre usa AlertDialog com nome, consequência e botão destrutivo;
 - tabela compacta no desktop e cards no mobile;
 - menus de ação têm nomes acessíveis;
 - na gestão de produtos, clicar ou pressionar Enter/Espaço na linha abre o
   Sheet de edição; ações internas não propagam o clique.
+
 
 ## Filtros
 
@@ -28,6 +30,7 @@
 - paginação usa navegação cliente single-flight, bloqueia reenvios enquanto
   pendente e rola imediatamente ao início dos filtros e resultados, antes da
   resposta da nova página;
+
 - no mobile, busca permanece visível e opções avançadas ficam em Sheet.
 
 ## Estados

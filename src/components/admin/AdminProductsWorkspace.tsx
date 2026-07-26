@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   Edit3,
+  Eye,
   MoreHorizontal,
   PackagePlus,
   Search,
@@ -515,6 +516,12 @@ export default function AdminProductsWorkspace({
                               </DropdownMenuTrigger>
                               <DropdownMenuContent align="end">
                                 <DropdownMenuLabel>Ações</DropdownMenuLabel>
+                                <DropdownMenuItem asChild>
+                                  <Link href={`/produtos/${product.id}`}>
+                                    <Eye />
+                                    Visualizar
+                                  </Link>
+                                </DropdownMenuItem>
                                 <DropdownMenuItem
                                   onSelect={() => setEditingProduct(product)}
                                 >
@@ -582,6 +589,7 @@ export default function AdminProductsWorkspace({
                               event.stopPropagation();
                               setEditingProduct(product);
                             }}
+                          >
                           >
                             <Edit3 />
                             Editar

@@ -37,6 +37,7 @@ trocas de página, filtros e hero permanecem montados e somente resultados,
 total e paginação apresentam skeleton. Um bloqueio single-flight impede
 navegações repetidas para o mesmo destino.
 
+
 ## Supabase e Server Actions
 
 O frontend consome schema e políticas existentes. Nenhuma tela concede
@@ -55,3 +56,4 @@ explicitamente fora deste escopo.
 específico. A sidebar pode ser recolhida durante a navegação, mas o estado não é
 persistido após recarregar. URLs antigas com `tab` em `/admin/clientes` são
 normalizadas para a rota correspondente.
+

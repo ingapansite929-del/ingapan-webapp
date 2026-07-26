@@ -34,7 +34,6 @@ import {
   type ProductRecord,
 } from "@/features/products/types";
 import { useCart } from "@/lib/CartContext";
-import { ProductsResultsSkeleton } from "@/components/products/ProductsCatalogSkeleton";
 
 interface ProductsGridProps {
   products: ProductRecord[];
@@ -43,8 +42,6 @@ interface ProductsGridProps {
   total: number;
   pageSize: number;
   filters: ProductCatalogFilters;
-  isPending: boolean;
-  onNavigate: (href: string) => boolean;
 }
 
 export default function ProductsGrid({
@@ -54,14 +51,6 @@ export default function ProductsGrid({
   total,
   pageSize,
   filters,
-  isPending,
-  onNavigate,
-}: ProductsGridProps) {
-  const { addItem } = useCart();
-
-  if (isPending) {
-    return <ProductsResultsSkeleton />;
-  }
 
   if (products.length === 0) {
     return (
@@ -175,16 +164,6 @@ export default function ProductsGrid({
             </motion.article>
           );
         })}
-      </div>
-
-      <div className="flex flex-col items-center justify-between gap-4 rounded-2xl border bg-card p-4 shadow-[var(--shadow-soft)] sm:flex-row">
-        <p className="text-sm text-muted-foreground" aria-live="polite">
-          Exibindo <strong className="text-foreground">{firstResult}</strong>–
-          <strong className="text-foreground">{lastResult}</strong> de{" "}
-          <strong className="text-foreground">{total}</strong>
-        </p>
-        <Pagination className="mx-0 w-auto">
-          <PaginationContent>
             <PaginationItem>
               <PaginationPrevious
                 href={buildProductsUrl(filters, Math.max(1, currentPage - 1))}
@@ -192,23 +171,6 @@ export default function ProductsGrid({
                 className={
                   currentPage === 1 ? "pointer-events-none opacity-40" : ""
                 }
-                aria-disabled={currentPage === 1}
-                onClick={(event) => {
-                  if (
-                    currentPage === 1 ||
-                    event.metaKey ||
-                    event.ctrlKey ||
-                    event.shiftKey ||
-                    event.altKey
-                  ) {
-                    if (currentPage === 1) event.preventDefault();
-                    return;
-                  }
-                  event.preventDefault();
-                  onNavigate(
-                    buildProductsUrl(filters, Math.max(1, currentPage - 1))
-                  );
-                }}
               />
             </PaginationItem>
             {paginationItems.map((item, index) =>
@@ -222,21 +184,6 @@ export default function ProductsGrid({
                     href={buildProductsUrl(filters, item)}
                     isActive={item === currentPage}
                     aria-label={`Ir para a página ${item}`}
-                    aria-disabled={item === currentPage}
-                    onClick={(event) => {
-                      if (
-                        item === currentPage ||
-                        event.metaKey ||
-                        event.ctrlKey ||
-                        event.shiftKey ||
-                        event.altKey
-                      ) {
-                        if (item === currentPage) event.preventDefault();
-                        return;
-                      }
-                      event.preventDefault();
-                      onNavigate(buildProductsUrl(filters, item));
-                    }}
                   >
                     {item}
                   </PaginationLink>
@@ -255,31 +202,8 @@ export default function ProductsGrid({
                     ? "pointer-events-none opacity-40"
                     : ""
                 }
-                aria-disabled={currentPage === pageCount}
-                onClick={(event) => {
-                  if (
-                    currentPage === pageCount ||
-                    event.metaKey ||
-                    event.ctrlKey ||
-                    event.shiftKey ||
-                    event.altKey
-                  ) {
-                    if (currentPage === pageCount) event.preventDefault();
-                    return;
-                  }
-                  event.preventDefault();
-                  onNavigate(
-                    buildProductsUrl(
-                      filters,
-                      Math.min(pageCount, currentPage + 1)
-                    )
-                  );
-                }}
               />
             </PaginationItem>
-          </PaginationContent>
-        </Pagination>
-      </div>
     </div>
   );
 }

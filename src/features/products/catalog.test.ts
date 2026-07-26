@@ -46,4 +46,5 @@ describe("filtros e paginação do catálogo", () => {
     lock.release();
     expect(lock.tryStart("/produtos?page=21")).toBe(true);
   });
+
 });
