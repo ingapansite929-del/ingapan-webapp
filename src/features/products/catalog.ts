@@ -84,3 +84,28 @@ export function getPaginationItems(
   });
   return result;
 }
+
+export interface CatalogNavigationLock {
+  tryStart: (href: string) => boolean;
+  release: () => void;
+  current: () => string | null;
+}
+
+export function createCatalogNavigationLock(): CatalogNavigationLock {
+  let pendingHref: string | null = null;
+
+  return {
+    tryStart(href) {
+      if (pendingHref) return false;
+      pendingHref = href;
+      return true;
+    },
+    release() {
+      pendingHref = null;
+    },
+    current() {
+      return pendingHref;
+    },
+  };
+}
+

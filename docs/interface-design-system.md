@@ -48,6 +48,10 @@ produto usam `ProductImage`, proporção estável e placeholder local.
 ## Motion
 
 `AppProviders` configura `MotionConfig reducedMotion="user"`. Motion é aplicado
-ao carrinho, revelações e mudanças de layout do catálogo. Sheets e dialogs
+ao carrinho, revelações e mudanças de layout do catálogo. Ao adicionar um
+produto, uma miniatura ampliada percorre uma trajetória visível da origem da
+ação até o ícone do carrinho, sem toast, abertura do Sheet ou pulso no contador.
+Sheets e dialogs
+
 mantêm transições funcionais curtas. Hovers são CSS. A regra global de
 `prefers-reduced-motion` reduz animações e remove rolagem suave.

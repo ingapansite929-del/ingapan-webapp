@@ -1,12 +1,9 @@
 import { requireAdminAccess } from "@/lib/auth/admin";
-import Link from "next/link";
-import { getLatestAdminOrders } from "@/features/orders/data";
-import type { AdminOrderSummary } from "@/features/orders/types";
+import { redirect } from "next/navigation";
 import { getAdminClientsAnalytics } from "@/features/clients/data";
 import type { AdminClientsAnalytics } from "@/features/clients/types";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 type SearchParams = Promise<{
   tab?: string | string[];
@@ -16,15 +13,9 @@ interface AdminClientsPageProps {
   searchParams: SearchParams;
 }
 
-type AdminClientsTab = "pedidos" | "clientes";
-
 function getSingleValue(value: string | string[] | undefined): string {
   if (!value) return "";
   return Array.isArray(value) ? value[0] ?? "" : value;
-}
-
-function getActiveTab(value: string | string[] | undefined): AdminClientsTab {
-  return getSingleValue(value) === "clientes" ? "clientes" : "pedidos";
 }
 
 const ptBrDateTime = new Intl.DateTimeFormat("pt-BR", {
@@ -37,27 +28,19 @@ const ptBrDate = new Intl.DateTimeFormat("pt-BR", {
 });
 
 export default async function AdminClientsPage({ searchParams }: AdminClientsPageProps) {
-  const { supabase } = await requireAdminAccess();
   const params = await searchParams;
-  const activeTab = getActiveTab(params.tab);
+  const legacyTab = getSingleValue(params.tab);
+  if (legacyTab === "pedidos") redirect("/admin/pedidos");
+  if (legacyTab) redirect("/admin/clientes");
 
-  let orders: AdminOrderSummary[] = [];
-  let ordersError: string | null = null;
+  const { supabase } = await requireAdminAccess();
   let clientsAnalytics: AdminClientsAnalytics | null = null;
   let clientsError: string | null = null;
 
-  if (activeTab === "pedidos") {
-    try {
-      orders = await getLatestAdminOrders(10);
-    } catch {
-      ordersError = "Não foi possível carregar os pedidos de clientes.";
-    }
-  } else {
-    try {
-      clientsAnalytics = await getAdminClientsAnalytics(supabase);
-    } catch {
-      clientsError = "Não foi possível carregar os indicadores de clientes.";
-    }
+  try {
+    clientsAnalytics = await getAdminClientsAnalytics(supabase);
+  } catch {
+    clientsError = "Não foi possível carregar os indicadores de clientes.";
   }
 
   return (
@@ -65,101 +48,15 @@ export default async function AdminClientsPage({ searchParams }: AdminClientsPag
       <div>
         <Badge variant="secondary">Relacionamento</Badge>
         <h1 className="mt-3 text-3xl font-bold">
-          Gestão de clientes
+          Clientes
         </h1>
         <p className="mt-1 max-w-2xl text-muted-foreground">
-          Acompanhe os pedidos recebidos via WhatsApp e monitore rapidamente os
-          últimos movimentos.
+          Acompanhe crescimento, atividade e engajamento da base de clientes.
         </p>
       </div>
 
-      <Tabs value={activeTab}>
-        <TabsList>
-          <TabsTrigger value="pedidos" asChild>
-            <Link href="/admin/clientes" scroll={false}>
-              Pedidos
-            </Link>
-          </TabsTrigger>
-          <TabsTrigger value="clientes" asChild>
-            <Link href="/admin/clientes?tab=clientes" scroll={false}>
-              Clientes
-            </Link>
-          </TabsTrigger>
-        </TabsList>
-      </Tabs>
-
       <Card className="p-5 sm:p-6">
-      {activeTab === "pedidos" ? (
-        <div className="space-y-4">
-          <h2 className="text-lg font-semibold text-brand-dark">Últimos 10 pedidos</h2>
-
-          {ordersError ? (
-            <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
-              {ordersError}
-            </div>
-          ) : orders.length === 0 ? (
-            <div className="rounded-xl border border-dashed border-brand-dark/20 bg-brand-light/40 px-4 py-10 text-center text-sm text-brand-dark/70">
-              Ainda não há pedidos registrados.
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {orders.map((order) => (
-                <article
-                  key={order.id}
-                  className="rounded-2xl border border-brand-dark/10 bg-white p-5 shadow-sm"
-                >
-                  <header className="flex flex-wrap items-start justify-between gap-3 border-b border-brand-dark/10 pb-4">
-                    <div>
-                      <p className="text-sm font-semibold text-brand-dark">
-                        Pedido #{order.id}
-                      </p>
-                      <p className="text-xs text-brand-dark/60">
-                        {ptBrDateTime.format(new Date(order.createdAt))}
-                      </p>
-                    </div>
-                    <span className="rounded-full bg-brand-yellow/20 px-2.5 py-1 text-xs font-medium text-brand-orange">
-                      {order.items.reduce((total, item) => total + item.quantity, 0)} itens
-                    </span>
-                  </header>
-
-                  <div className="mt-4 grid gap-3 text-sm md:grid-cols-2">
-                    <div>
-                      <p className="text-brand-dark/60">Cliente</p>
-                      <p className="font-medium text-brand-dark">
-                        {order.profileName ?? order.customerName ?? "Visitante"}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-brand-dark/60">Email</p>
-                      <p className="font-medium text-brand-dark">
-                        {order.profileEmail ?? order.customerEmail ?? "Não informado"}
-                      </p>
-                    </div>
-                    <div className="md:col-span-2">
-                      <p className="text-brand-dark/60">Sessão</p>
-                      <p className="font-mono text-xs text-brand-dark/70">
-                        {order.sessionId}
-                      </p>
-                    </div>
-                  </div>
-
-                  <ul className="mt-4 space-y-2 rounded-xl bg-brand-light/40 p-3">
-                    {order.items.map((item) => (
-                      <li
-                        key={item.id}
-                        className="flex items-center justify-between gap-3 text-sm text-brand-dark"
-                      >
-                        <span>{item.productName}</span>
-                        <span className="font-semibold">x{item.quantity}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </article>
-              ))}
-            </div>
-          )}
-        </div>
-      ) : clientsError ? (
+      {clientsError ? (
         <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
           {clientsError}
         </div>

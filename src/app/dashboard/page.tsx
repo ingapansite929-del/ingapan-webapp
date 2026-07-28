@@ -81,7 +81,6 @@ export default async function DashboardPage() {
               <TopOrderedProductsCard />
             </Suspense>
           </section>
-
           <section className="grid gap-4 md:grid-cols-2">
             <Card>
               <CardHeader>

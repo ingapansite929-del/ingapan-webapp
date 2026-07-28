@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
+import { Suspense } from "react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import ProductsGrid from "@/components/ProductsGrid";
-import ProductsFilters from "@/components/ProductsFilters";
+import ProductsCatalogClient from "@/components/products/ProductsCatalogClient";
+import ProductsCatalogSkeleton from "@/components/products/ProductsCatalogSkeleton";
 import {
   buildProductsUrl,
   getSingleSearchValue,
@@ -79,7 +80,7 @@ export async function generateMetadata({
   };
 }
 
-export default async function ProductsPage({
+async function ProductsCatalog({
   searchParams,
 }: ProductsPageProps) {
   const params = await searchParams;
@@ -157,6 +158,21 @@ export default async function ProductsPage({
   const products = parseProductRecords(productsResult.data);
 
   return (
+    <ProductsCatalogClient
+      products={products}
+      categories={categories}
+      subcategories={subcategories}
+      filters={filters}
+      currentPage={requestedPage}
+      pageCount={pageCount}
+      total={total}
+      pageSize={PRODUCT_PAGE_SIZE}
+    />
+  );
+}
+
+export default function ProductsPage({ searchParams }: ProductsPageProps) {
+  return (
     <>
       <Header />
       <main
@@ -181,21 +197,9 @@ export default async function ProductsPage({
         </section>
 
         <section className="mx-auto max-w-[90rem] px-4 py-8 sm:px-6 lg:px-10">
-          <ProductsFilters
-            key={buildProductsUrl(filters)}
-            categories={categories}
-            subcategories={subcategories}
-            filters={filters}
-            total={total}
-          />
-          <ProductsGrid
-            products={products}
-            currentPage={requestedPage}
-            pageCount={pageCount}
-            total={total}
-            pageSize={PRODUCT_PAGE_SIZE}
-            filters={filters}
-          />
+          <Suspense fallback={<ProductsCatalogSkeleton />}>
+            <ProductsCatalog searchParams={searchParams} />
+          </Suspense>
         </section>
       </main>
       <Footer />
