@@ -77,16 +77,16 @@ test("paginação bloqueia cliques repetidos e mantém o shell estável", async 
 
   await expect(hero).toBeVisible();
   await expect(page.getByLabel("Carregando produtos")).toBeVisible();
-  const catalogStart = page.locator("[data-catalog-start]");
+  const productsStart = page.locator("[data-products-start]");
   await expect
     .poll(() =>
-      catalogStart.evaluate((element) => element.getBoundingClientRect().top)
+      productsStart.evaluate((element) => element.getBoundingClientRect().top)
     )
     .toBeGreaterThanOrEqual(64);
-  const catalogTopWhilePending = await catalogStart.evaluate((element) =>
+  const productsTopWhilePending = await productsStart.evaluate((element) =>
     element.getBoundingClientRect().top
   );
-  expect(catalogTopWhilePending).toBeLessThan(140);
+  expect(productsTopWhilePending).toBeLessThan(140);
 
   await expect(page).toHaveURL(/page=20/);
   await expect(

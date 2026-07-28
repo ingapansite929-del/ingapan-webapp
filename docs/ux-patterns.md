@@ -28,7 +28,7 @@
 - “Limpar filtros” volta ao estado canônico;
 - paginação preserva todos os parâmetros na URL;
 - paginação usa navegação cliente single-flight, bloqueia reenvios enquanto
-  pendente e rola imediatamente ao início dos filtros e resultados, antes da
+  pendente e rola imediatamente ao início da grade de produtos, antes da
   resposta da nova página;
 
 - no mobile, busca permanece visível e opções avançadas ficam em Sheet.

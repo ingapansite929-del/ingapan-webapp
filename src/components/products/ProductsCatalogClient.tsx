@@ -38,13 +38,13 @@ export default function ProductsCatalogClient({
   const reducedMotion = useReducedMotion();
   const [isPending, startTransition] = useTransition();
   const navigationLockRef = useRef(createCatalogNavigationLock());
-  const catalogRef = useRef<HTMLDivElement>(null);
+  const productsRef = useRef<HTMLDivElement>(null);
 
-  const navigate = (href: string, scrollToCatalog = false) => {
+  const navigate = (href: string, scrollToProducts = false) => {
     if (!navigationLockRef.current.tryStart(href)) return false;
 
-    if (scrollToCatalog) {
-      catalogRef.current?.scrollIntoView({
+    if (scrollToProducts) {
+      productsRef.current?.scrollIntoView({
         behavior: reducedMotion ? "auto" : "smooth",
         block: "start",
       });
@@ -61,7 +61,7 @@ export default function ProductsCatalogClient({
   }, [isPending]);
 
   return (
-    <div ref={catalogRef} data-catalog-start className="scroll-mt-24">
+    <div>
       <ProductsFilters
         key={`${filters.nome}-${filters.categoria}-${filters.subcategoria}-${filters.ordem}`}
         categories={categories}
@@ -71,16 +71,18 @@ export default function ProductsCatalogClient({
         isPending={isPending}
         onNavigate={(href) => navigate(href)}
       />
-      <ProductsGrid
-        products={products}
-        currentPage={currentPage}
-        pageCount={pageCount}
-        total={total}
-        pageSize={pageSize}
-        filters={filters}
-        isPending={isPending}
-        onNavigate={(href) => navigate(href, true)}
-      />
+      <div ref={productsRef} data-products-start className="scroll-mt-24">
+        <ProductsGrid
+          products={products}
+          currentPage={currentPage}
+          pageCount={pageCount}
+          total={total}
+          pageSize={pageSize}
+          filters={filters}
+          isPending={isPending}
+          onNavigate={(href) => navigate(href, true)}
+        />
+      </div>
     </div>
   );
 }
