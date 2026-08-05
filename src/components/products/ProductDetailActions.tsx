@@ -1,7 +1,7 @@
 "use client";
 
 import { MessageCircle, ShoppingCart } from "lucide-react";
-import { SOCIAL_LINKS } from "@/lib/constants";
+import { WHATSAPP_URL } from "@/lib/constants";
 import { useCart } from "@/lib/CartContext";
 import type { ProductRecord } from "@/features/products/types";
 import { Button } from "@/components/ui/button";
@@ -16,16 +16,11 @@ export default function ProductDetailActions({
   const { addItem } = useCart();
 
   const handleWhatsAppQuote = () => {
-    const whatsappLink =
-      SOCIAL_LINKS.find((link) => link.name === "WhatsApp")?.url ??
-      "https://wa.me/5544999999999";
-    const phoneNumber = whatsappLink.replace("https://wa.me/", "");
-
     const message = encodeURIComponent(
       `Olá! Tenho interesse no produto "${product.nome}" (Cód. #${product.id}). Gostaria de receber mais informações e orçamento.`
     );
 
-    window.open(`https://wa.me/${phoneNumber}?text=${message}`, "_blank");
+    window.open(`${WHATSAPP_URL}?text=${message}`, "_blank");
   };
 
   return (
