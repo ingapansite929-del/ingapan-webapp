@@ -1,18 +1,24 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import useEmblaCarousel from "embla-carousel-react";
 import Autoplay from "embla-carousel-autoplay";
-import { ChevronLeft, ChevronRight } from "lucide-react";
-import type { ProductCategory } from "@/types";
+import { AlertTriangle, ChevronLeft, ChevronRight } from "lucide-react";
+import type { HomepageCarouselState } from "@/features/products/featured";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
+import { Spinner } from "@/components/ui/spinner";
 import ProductCard from "./ProductCard";
 import ScrollReveal from "./ScrollReveal";
 
 interface ProductCarouselProps {
-  products: ProductCategory[];
+  state: HomepageCarouselState;
 }
 
-export default function ProductCarousel({ products }: ProductCarouselProps) {
+export default function ProductCarousel({ state }: ProductCarouselProps) {
+  const router = useRouter();
+  const [isRefreshing, startRefresh] = useTransition();
   const [emblaRef, emblaApi] = useEmblaCarousel(
     {
       loop: true,
@@ -24,6 +30,7 @@ export default function ProductCarousel({ products }: ProductCarouselProps) {
 
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [scrollSnaps, setScrollSnaps] = useState<number[]>([]);
+  const products = state.status === "ready" ? state.products : [];
 
   const scrollPrev = useCallback(() => emblaApi?.scrollPrev(), [emblaApi]);
   const scrollNext = useCallback(() => emblaApi?.scrollNext(), [emblaApi]);
@@ -49,6 +56,10 @@ export default function ProductCarousel({ products }: ProductCarouselProps) {
 
   const hasMultipleSlides = products.length > 1;
 
+  const retry = () => {
+    startRefresh(() => router.refresh());
+  };
+
   return (
     <section id="produtos" className="bg-brand-light py-20 md:py-28">
       <div className="mx-auto max-w-[90rem] px-4 sm:px-6 lg:px-10">
@@ -68,61 +79,103 @@ export default function ProductCarousel({ products }: ProductCarouselProps) {
           </div>
         </ScrollReveal>
 
-        <ScrollReveal delay={200}>
-          <div className="relative">
-            {/* Carousel */}
-            <div className="overflow-hidden" ref={emblaRef}>
-              <div className="flex">
-                {products.map((product, index) => (
-                  <div
-                    key={product.id}
-                    className="min-w-0 flex-[0_0_100%] pl-4 sm:flex-[0_0_50%] lg:flex-[0_0_33.333%] xl:flex-[0_0_25%]"
+        {state.status === "error" ? (
+          <ScrollReveal delay={200}>
+            <Alert
+              variant="destructive"
+              aria-label="Não foi possível carregar os destaques"
+              aria-live="polite"
+              className="mx-auto max-w-2xl bg-white shadow-[var(--shadow-raised)]"
+            >
+              <AlertTriangle aria-hidden="true" />
+              <AlertTitle>Não foi possível carregar os destaques</AlertTitle>
+              <AlertDescription>
+                <p>
+                  O catálogo continua disponível. Tente carregar esta seção
+                  novamente em alguns instantes.
+                </p>
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="mt-3 min-w-44"
+                  onClick={retry}
+                  disabled={isRefreshing}
+                >
+                  {isRefreshing ? (
+                    <>
+                      <Spinner aria-label="Atualizando destaques" />
+                      Atualizando...
+                    </>
+                  ) : (
+                    "Tentar novamente"
+                  )}
+                </Button>
+              </AlertDescription>
+            </Alert>
+          </ScrollReveal>
+        ) : (
+          <ScrollReveal delay={200}>
+            <div className="relative">
+              {/* Carousel */}
+              <div className="overflow-hidden" ref={emblaRef}>
+                <div className="flex">
+                  {products.map((product, index) => (
+                    <div
+                      key={product.id}
+                      className="min-w-0 flex-[0_0_100%] pl-4 sm:flex-[0_0_50%] lg:flex-[0_0_33.333%] xl:flex-[0_0_25%]"
+                    >
+                      <ProductCard product={product} priority={index === 0} />
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Navigation Arrows */}
+              {hasMultipleSlides ? (
+                <>
+                  <button
+                    onClick={scrollPrev}
+                    className="absolute -left-2 top-1/2 z-10 -translate-y-1/2 rounded-full bg-brand-red p-3 text-white shadow-[0_16px_24px_-16px_rgba(186,37,30,0.85)] transition-all duration-200 hover:scale-110 hover:bg-brand-red/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-yellow focus-visible:ring-offset-2 focus-visible:ring-offset-brand-light active:scale-[0.97] md:-left-5"
+                    aria-label="Produto anterior"
                   >
-                    <ProductCard product={product} priority={index === 0} />
-                  </div>
+                    <ChevronLeft size={22} />
+                  </button>
+                  <button
+                    onClick={scrollNext}
+                    className="absolute -right-2 top-1/2 z-10 -translate-y-1/2 rounded-full bg-brand-red p-3 text-white shadow-[0_16px_24px_-16px_rgba(186,37,30,0.85)] transition-all duration-200 hover:scale-110 hover:bg-brand-red/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-yellow focus-visible:ring-offset-2 focus-visible:ring-offset-brand-light active:scale-[0.97] md:-right-5"
+                    aria-label="Próximo produto"
+                  >
+                    <ChevronRight size={22} />
+                  </button>
+                </>
+              ) : null}
+            </div>
+
+            {/* Dot Indicators */}
+            {hasMultipleSlides ? (
+              <div className="mt-6 flex flex-wrap justify-center">
+                {scrollSnaps.map((_, index) => (
+                  <button
+                    key={index}
+                    onClick={() => scrollTo(index)}
+                    className="group flex size-11 items-center justify-center rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-red focus-visible:ring-offset-2 focus-visible:ring-offset-brand-light"
+                    aria-label={`Ir para slide ${index + 1}`}
+                    aria-current={index === selectedIndex ? "true" : undefined}
+                  >
+                    <span
+                      aria-hidden="true"
+                      className={`h-2.5 rounded-full transition-all duration-300 ${
+                        index === selectedIndex
+                          ? "w-8 bg-brand-red"
+                          : "w-2.5 bg-brand-dark/20 group-hover:bg-brand-dark/40"
+                      }`}
+                    />
+                  </button>
                 ))}
               </div>
-            </div>
-
-            {/* Navigation Arrows */}
-            {hasMultipleSlides ? (
-              <>
-                <button
-                  onClick={scrollPrev}
-                  className="absolute -left-2 top-1/2 z-10 -translate-y-1/2 rounded-full bg-brand-red p-2.5 text-white shadow-[0_16px_24px_-16px_rgba(186,37,30,0.85)] transition-all duration-200 hover:scale-110 hover:bg-brand-red/90 active:scale-[0.97] md:-left-5 md:p-3"
-                  aria-label="Produto anterior"
-                >
-                  <ChevronLeft size={22} />
-                </button>
-                <button
-                  onClick={scrollNext}
-                  className="absolute -right-2 top-1/2 z-10 -translate-y-1/2 rounded-full bg-brand-red p-2.5 text-white shadow-[0_16px_24px_-16px_rgba(186,37,30,0.85)] transition-all duration-200 hover:scale-110 hover:bg-brand-red/90 active:scale-[0.97] md:-right-5 md:p-3"
-                  aria-label="Próximo produto"
-                >
-                  <ChevronRight size={22} />
-                </button>
-              </>
             ) : null}
-          </div>
-
-          {/* Dot Indicators */}
-          {hasMultipleSlides ? (
-            <div className="mt-8 flex justify-center gap-2">
-              {scrollSnaps.map((_, index) => (
-                <button
-                  key={index}
-                  onClick={() => scrollTo(index)}
-                  className={`h-2.5 rounded-full transition-all duration-300 ${
-                    index === selectedIndex
-                      ? "w-8 bg-brand-red"
-                      : "w-2.5 bg-brand-dark/20 hover:bg-brand-dark/40"
-                  }`}
-                  aria-label={`Ir para slide ${index + 1}`}
-                />
-              ))}
-            </div>
-          ) : null}
-        </ScrollReveal>
+          </ScrollReveal>
+        )}
       </div>
     </section>
   );

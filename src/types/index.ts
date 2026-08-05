@@ -2,7 +2,7 @@ export interface ProductCategory {
   id: string;
   name: string;
   description: string;
-  image: string;
+  image: string | null;
 }
 
 export interface ContactInfo {
