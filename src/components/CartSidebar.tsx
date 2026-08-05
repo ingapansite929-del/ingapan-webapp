@@ -4,7 +4,7 @@ import { useCart } from "@/lib/CartContext";
 import { X, Plus, Minus, Trash2, Send } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useRef, useState } from "react";
-import { SOCIAL_LINKS } from "@/lib/constants";
+import { WHATSAPP_URL } from "@/lib/constants";
 import { useToast } from "@/components/Toast";
 import ProductImage from "@/components/products/ProductImage";
 import { Button } from "@/components/ui/button";
@@ -47,10 +47,6 @@ export default function CartSidebar() {
   const handleWhatsAppCheckout = async () => {
     if (items.length === 0 || isSubmittingCheckout) return;
 
-    // Get WhatsApp number from constants or fallback
-    const whatsappLink = SOCIAL_LINKS.find(link => link.name === "WhatsApp")?.url || "https://wa.me/5544999999999";
-    const phoneNumber = whatsappLink.replace("https://wa.me/", "");
-
     const messageStart = "Olá! Gostaria de solicitar um orçamento para os seguintes produtos:\n\n";
     
     const itemsList = items
@@ -60,7 +56,7 @@ export default function CartSidebar() {
     const messageEnd = "\n\nAguardo o retorno com os valores.";
     
     const fullMessage = encodeURIComponent(messageStart + itemsList + messageEnd);
-    const whatsappUrl = `https://wa.me/${phoneNumber}?text=${fullMessage}`;
+    const whatsappUrl = `${WHATSAPP_URL}?text=${fullMessage}`;
 
     setIsSubmittingCheckout(true);
     try {

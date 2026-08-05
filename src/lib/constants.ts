@@ -71,13 +71,14 @@ export const PRODUCTS: ProductCategory[] = [
 ];
 
 export const CONTACT: ContactInfo = {
-  phone: "(44) 3028-7898",
-  email: "contato@ingapan.com.br",
+  phone: "(44) 99949-7172",
+  email: "ingapan@ingapan.com.br",
   address: "Maringá, Paraná",
 };
 
+export const WHATSAPP_URL = "https://wa.me/5544999497172";
+
 export const SOCIAL_LINKS = [
   { name: "Instagram", url: "https://instagram.com/ingapan_maringa", icon: "instagram" },
-  { name: "Facebook", url: "https://facebook.com/ingapan", icon: "facebook" },
-  { name: "WhatsApp", url: "https://wa.me/5544999497172", icon: "whatsapp" },
+  { name: "WhatsApp", url: WHATSAPP_URL, icon: "whatsapp" },
 ];

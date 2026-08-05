@@ -3,7 +3,6 @@ import {
   Mail,
   MapPin,
   Instagram,
-  Facebook,
   MessageCircle,
 } from "lucide-react";
 import { CONTACT, SOCIAL_LINKS } from "@/lib/constants";
@@ -12,7 +11,6 @@ import Image from "next/image";
 
 const socialIcons: Record<string, React.ReactNode> = {
   instagram: <Instagram size={20} />,
-  facebook: <Facebook size={20} />,
   whatsapp: <MessageCircle size={20} />,
 };
 
