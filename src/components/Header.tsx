@@ -75,7 +75,7 @@ export default function Header({ initialUser = null }: HeaderProps) {
   return (
     <>
       <header
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${headerClasses}`}
+        className={`scroll-lock-fixed fixed top-0 left-0 right-0 z-50 transition-[background-color,border-color,box-shadow,backdrop-filter] duration-300 ${headerClasses}`}
       >
         <div className="mx-auto max-w-[90rem] px-4 sm:px-6 lg:px-10">
           <div className="flex h-16 items-center justify-between md:h-20">

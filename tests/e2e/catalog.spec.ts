@@ -16,10 +16,20 @@ test("catálogo abre sem overflow e preserva filtros na paginação", async ({
       name: "Encontre o produto certo para seu negócio",
     })
   ).toBeVisible();
-  const dimensions = await page
-    .locator("body")
-    .evaluate((body) => ({ scrollWidth: body.scrollWidth, clientWidth: body.clientWidth }));
-  expect(dimensions.scrollWidth).toBe(dimensions.clientWidth);
+  const dimensions = await page.evaluate(() => ({
+    body: {
+      scrollWidth: document.body.scrollWidth,
+      clientWidth: document.body.clientWidth,
+    },
+    document: {
+      scrollWidth: document.documentElement.scrollWidth,
+      clientWidth: document.documentElement.clientWidth,
+    },
+  }));
+  expect(dimensions.body.scrollWidth).toBe(dimensions.body.clientWidth);
+  expect(dimensions.document.scrollWidth).toBe(
+    dimensions.document.clientWidth
+  );
 
   const search = page.getByLabel("Buscar produtos por nome");
   if (await search.isVisible()) {
@@ -96,26 +106,58 @@ test("paginação bloqueia cliques repetidos e mantém o shell estável", async 
   expect(page20Requests).toBe(1);
 });
 
-test("dropdown limita altura e mantém rolagem nas opções", async ({ page }) => {
+test("filtros nativos preservam a rolagem e a geometria do header", async ({
+  page,
+}) => {
   await page.goto("/produtos");
 
-  if (await page.getByRole("button", { name: "Abrir filtros" }).isVisible()) {
-    await page.getByRole("button", { name: "Abrir filtros" }).click();
+  const header = page.locator("header.fixed");
+  const headerBeforeOverlay = await header.boundingBox();
+  expect(headerBeforeOverlay).not.toBeNull();
+
+  const openFilters = page.getByRole("button", { name: "Abrir filtros" });
+  let filterControls = page.locator("main");
+  if (await openFilters.isVisible()) {
+    await openFilters.click();
+    filterControls = page.getByRole("dialog", { name: "Filtrar produtos" });
+    await expect(filterControls).toBeVisible();
+
+    const headerAfterOverlay = await header.boundingBox();
+    expect(headerAfterOverlay).not.toBeNull();
+    expect(headerAfterOverlay?.x).toBeCloseTo(headerBeforeOverlay?.x ?? 0, 0);
+    expect(headerAfterOverlay?.width).toBeCloseTo(
+      headerBeforeOverlay?.width ?? 0,
+      0
+    );
   }
 
-  const subcategory = page.getByRole("combobox", { name: "Subcategoria" });
-  await subcategory.click();
-  const content = page.locator('[data-slot="select-content"]').filter({
-    has: page.getByRole("option", { name: "Todas as subcategorias" }),
-  });
-  await expect(content).toBeVisible();
-  const viewport = content.locator('[data-slot="select-viewport"]');
-  const dimensions = await viewport.evaluate((element) => ({
-    clientHeight: element.clientHeight,
-    scrollHeight: element.scrollHeight,
-  }));
-  expect(dimensions.clientHeight).toBeLessThanOrEqual(320);
-  expect(dimensions.scrollHeight).toBeGreaterThan(dimensions.clientHeight);
+  const body = page.locator("body");
+  const scrollLockBeforeSelection = await body.getAttribute("data-scroll-locked");
+  const scrollBeforeSelection = await page.evaluate(() => window.scrollY);
+  const headerBeforeSelection = await header.boundingBox();
+
+  const category = filterControls.getByLabel("Categoria", { exact: true });
+  const subcategory = filterControls.getByLabel("Subcategoria", { exact: true });
+  await expect(category).toHaveCount(1);
+  await expect(subcategory).toHaveCount(1);
+  await category.focus();
+  await expect(category).toBeFocused();
+  await subcategory.selectOption({ index: 1 });
+  await expect(subcategory).not.toHaveValue("");
+
+  expect(await body.getAttribute("data-scroll-locked")).toBe(
+    scrollLockBeforeSelection
+  );
+  expect(await page.evaluate(() => window.scrollY)).toBe(scrollBeforeSelection);
+
+  const headerAfterSelection = await header.boundingBox();
+  expect(headerBeforeSelection).not.toBeNull();
+  expect(headerAfterSelection).not.toBeNull();
+  expect(headerAfterSelection?.x).toBeCloseTo(headerBeforeSelection?.x ?? 0, 0);
+  expect(headerAfterSelection?.width).toBeCloseTo(
+    headerBeforeSelection?.width ?? 0,
+    0
+  );
 });
 
 test("carrinho salvo hidrata sem mismatch", async ({ page }) => {

@@ -14,13 +14,6 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
   Sheet,
   SheetClose,
   SheetContent,
@@ -50,6 +43,9 @@ interface FilterControlsProps {
   action?: ReactNode;
 }
 
+const FILTER_SELECT_CLASS_NAME =
+  "h-11 w-full rounded-md border border-input bg-background px-3 text-sm shadow-xs outline-none transition-[color,box-shadow] focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 lg:h-9";
+
 function FilterControls({
   prefix,
   categories,
@@ -59,7 +55,7 @@ function FilterControls({
   action,
 }: FilterControlsProps) {
   return (
-    <div className="grid min-w-0 flex-1 gap-4 lg:grid-cols-[minmax(240px,1.4fr)_minmax(180px,1fr)_minmax(180px,1fr)_minmax(180px,1fr)_auto]">
+    <div className="grid min-w-0 flex-1 gap-4 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_auto]">
       <div className="space-y-2">
         <label htmlFor={`${prefix}-nome`} className="text-sm font-medium">
           Buscar por nome
@@ -86,89 +82,80 @@ function FilterControls({
       </div>
 
       <div className="space-y-2">
-        <label className="text-sm font-medium">Categoria</label>
-        <Select
-          value={draft.categoria || "all"}
-          onValueChange={(value) =>
+        <label
+          htmlFor={`${prefix}-categoria`}
+          className="text-sm font-medium"
+        >
+          Categoria
+        </label>
+        <select
+          id={`${prefix}-categoria`}
+          value={draft.categoria}
+          onChange={(event) =>
             setDraft((current) => ({
               ...current,
-              categoria: value === "all" ? "" : value,
+              categoria: event.target.value,
             }))
           }
+          className={FILTER_SELECT_CLASS_NAME}
         >
-          <SelectTrigger className="w-full" aria-label="Categoria">
-            <SelectValue placeholder="Todas" />
-          </SelectTrigger>
-          <SelectContent
-            position="popper"
-            align="start"
-            className="max-h-80 w-[var(--radix-select-trigger-width)]"
-          >
-            <SelectItem value="all">Todas as categorias</SelectItem>
-            {categories.map((category) => (
-              <SelectItem key={category.id} value={String(category.id)}>
-                {category.category}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+          <option value="">Todas as categorias</option>
+          {categories.map((category) => (
+            <option key={category.id} value={category.id}>
+              {category.category}
+            </option>
+          ))}
+        </select>
       </div>
 
       <div className="space-y-2">
-        <label className="text-sm font-medium">Subcategoria</label>
-        <Select
-          value={draft.subcategoria || "all"}
-          onValueChange={(value) =>
+        <label
+          htmlFor={`${prefix}-subcategoria`}
+          className="text-sm font-medium"
+        >
+          Subcategoria
+        </label>
+        <select
+          id={`${prefix}-subcategoria`}
+          value={draft.subcategoria}
+          onChange={(event) =>
             setDraft((current) => ({
               ...current,
-              subcategoria: value === "all" ? "" : value,
+              subcategoria: event.target.value,
             }))
           }
+          className={FILTER_SELECT_CLASS_NAME}
         >
-          <SelectTrigger className="w-full" aria-label="Subcategoria">
-            <SelectValue placeholder="Todas" />
-          </SelectTrigger>
-          <SelectContent
-            position="popper"
-            align="start"
-            className="max-h-80 w-[var(--radix-select-trigger-width)]"
-          >
-            <SelectItem value="all">Todas as subcategorias</SelectItem>
-            {subcategories.map((subcategory) => (
-              <SelectItem key={subcategory.id} value={String(subcategory.id)}>
-                {subcategory.subcategoria}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+          <option value="">Todas as subcategorias</option>
+          {subcategories.map((subcategory) => (
+            <option key={subcategory.id} value={subcategory.id}>
+              {subcategory.subcategoria}
+            </option>
+          ))}
+        </select>
       </div>
 
       <div className="space-y-2">
-        <label className="text-sm font-medium">Ordenar por</label>
-        <Select
+        <label htmlFor={`${prefix}-ordem`} className="text-sm font-medium">
+          Ordenar por
+        </label>
+        <select
+          id={`${prefix}-ordem`}
           value={draft.ordem}
-          onValueChange={(value) =>
+          onChange={(event) =>
             setDraft((current) => ({
               ...current,
-              ordem: value as ProductOrder,
+              ordem: event.target.value as ProductOrder,
             }))
           }
+          className={FILTER_SELECT_CLASS_NAME}
         >
-          <SelectTrigger className="w-full" aria-label="Ordenar produtos">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent
-            position="popper"
-            align="start"
-            className="max-h-80 w-[var(--radix-select-trigger-width)]"
-          >
-            {PRODUCT_ORDER_OPTIONS.map((option) => (
-              <SelectItem key={option.value} value={option.value}>
-                {option.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+          {PRODUCT_ORDER_OPTIONS.map((option) => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
       </div>
       {action ? <div className="flex items-end">{action}</div> : null}
     </div>
