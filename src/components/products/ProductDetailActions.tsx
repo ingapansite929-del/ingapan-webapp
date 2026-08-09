@@ -1,9 +1,10 @@
 "use client";
 
 import { MessageCircle, ShoppingCart } from "lucide-react";
-import { WHATSAPP_URL } from "@/lib/constants";
 import { useCart } from "@/lib/CartContext";
 import type { ProductRecord } from "@/features/products/types";
+import { buildSingleProductQuoteMessage } from "@/features/products/quote";
+import { WHATSAPP_URL } from "@/lib/constants";
 import { Button } from "@/components/ui/button";
 
 interface ProductDetailActionsProps {
@@ -16,9 +17,7 @@ export default function ProductDetailActions({
   const { addItem } = useCart();
 
   const handleWhatsAppQuote = () => {
-    const message = encodeURIComponent(
-      `Olá! Tenho interesse no produto "${product.nome}" (Cód. #${product.id}). Gostaria de receber mais informações e orçamento.`
-    );
+    const message = encodeURIComponent(buildSingleProductQuoteMessage(product));
 
     window.open(`${WHATSAPP_URL}?text=${message}`, "_blank");
   };

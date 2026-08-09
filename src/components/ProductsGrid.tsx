@@ -33,6 +33,7 @@ import {
   getProductSubcategory,
   type ProductRecord,
 } from "@/features/products/types";
+import { formatProductReference } from "@/features/products/quote";
 import { useCart } from "@/lib/CartContext";
 import { ProductsResultsSkeleton } from "@/components/products/ProductsCatalogSkeleton";
 
@@ -95,6 +96,7 @@ export default function ProductsGrid({
         {products.map((product, index) => {
           const category = getProductCategory(product);
           const subcategory = getProductSubcategory(product);
+          const reference = formatProductReference(product);
 
           return (
             <motion.article
@@ -140,9 +142,11 @@ export default function ProductsGrid({
                     <h2 className="line-clamp-2 text-lg font-bold leading-snug transition-colors group-hover:text-brand-red">
                       {product.nome}
                     </h2>
-                    <p className="mt-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                      Cód. #{product.id}
-                    </p>
+                    {reference ? (
+                      <p className="mt-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                        {reference}
+                      </p>
+                    ) : null}
                   </div>
                   {product.descricao ? (
                     <p className="line-clamp-2 text-sm leading-relaxed text-muted-foreground">

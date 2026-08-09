@@ -19,11 +19,22 @@ describe("contrato de produto", () => {
 
     expect(product).toMatchObject({
       id: 554,
+      codigo: null,
       descricao: null,
       image_url: null,
       product_categoria: { id: 2, category: "Congelados" },
       product_subcategory: { id: 8, subcategoria: "Salgados" },
     });
+  });
+
+  it("normaliza o código sem converter seu formato", () => {
+    const product = parseProductRecord({
+      id: 555,
+      codigo: "  001-A  ",
+      nome: "Produto com código",
+    });
+
+    expect(product?.codigo).toBe("001-A");
   });
 
   it("rejeita protocolos inseguros e strings vazias de imagem", () => {

@@ -23,6 +23,10 @@ const optionalImageUrl = z
   .transform((value) => value || null);
 
 export const productFormSchema = z.object({
+  codigo: z
+    .string()
+    .trim()
+    .transform((value) => value || null),
   nome: z
     .string()
     .trim()
@@ -50,6 +54,7 @@ export type NormalizedProductFormValues = z.output<typeof productFormSchema>;
 export function productFormDataToObject(formData: FormData) {
   return {
     id: formData.get("id"),
+    codigo: formData.get("codigo") ?? "",
     nome: formData.get("nome"),
     id_categoria: formData.get("id_categoria"),
     id_subcategoria: formData.get("id_subcategoria"),

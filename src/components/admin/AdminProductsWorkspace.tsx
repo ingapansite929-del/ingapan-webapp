@@ -177,6 +177,21 @@ function ProductForm({
       {product ? <input type="hidden" name="id" value={product.id} /> : null}
 
       <div className="space-y-2">
+        <label htmlFor="product-code" className="text-sm font-medium">
+          Código interno{" "}
+          <span className="text-muted-foreground">(opcional)</span>
+        </label>
+        <Input
+          id="product-code"
+          name="codigo"
+          defaultValue={product?.codigo ?? ""}
+          aria-invalid={Boolean(fieldErrors.codigo)}
+          placeholder="Ex.: 1480"
+        />
+        <FieldError name="codigo" errors={fieldErrors} />
+      </div>
+
+      <div className="space-y-2">
         <label htmlFor="product-name" className="text-sm font-medium">
           Nome do produto
         </label>
@@ -450,7 +465,7 @@ export default function AdminProductsWorkspace({
                   <TableHeader>
                     <TableRow>
                       <TableHead className="w-16">Imagem</TableHead>
-                      <TableHead className="w-20">Código</TableHead>
+                      <TableHead className="w-28">Código interno</TableHead>
                       <TableHead>Produto</TableHead>
                       <TableHead>Categoria</TableHead>
                       <TableHead>Subcategoria</TableHead>
@@ -492,7 +507,7 @@ export default function AdminProductsWorkspace({
                             </div>
                           </TableCell>
                           <TableCell className="font-mono text-xs">
-                            #{product.id}
+                            {product.codigo ?? "—"}
                           </TableCell>
                           <TableCell className="max-w-72 font-medium">
                             <span className="line-clamp-2">{product.nome}</span>
@@ -565,7 +580,9 @@ export default function AdminProductsWorkspace({
                       </div>
                       <div className="pointer-events-none relative z-10 min-w-0 flex-1">
                         <p className="text-xs text-muted-foreground">
-                          #{product.id}
+                          {product.codigo
+                            ? `Cód. ${product.codigo}`
+                            : "Sem código interno"}
                         </p>
                         <h2 className="line-clamp-2 font-semibold">
                           {product.nome}
@@ -661,8 +678,8 @@ export default function AdminProductsWorkspace({
           <SheetHeader>
             <SheetTitle>Novo produto</SheetTitle>
             <SheetDescription>
-              Cadastre as informações essenciais. Imagem e descrição são
-              opcionais.
+              Cadastre as informações essenciais. Código interno, imagem e
+              descrição são opcionais.
             </SheetDescription>
           </SheetHeader>
           <ProductForm
@@ -684,7 +701,7 @@ export default function AdminProductsWorkspace({
           <SheetHeader>
             <SheetTitle>Editar produto</SheetTitle>
             <SheetDescription>
-              Atualize os dados sem alterar o código do produto.
+              Atualize os dados do catálogo, incluindo o código interno.
             </SheetDescription>
           </SheetHeader>
           {editingProduct ? (

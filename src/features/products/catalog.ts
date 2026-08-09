@@ -3,8 +3,8 @@ export const PRODUCT_PAGE_SIZE = 20;
 export const PRODUCT_ORDER_OPTIONS = [
   { value: "nome-asc", label: "Nome A–Z" },
   { value: "nome-desc", label: "Nome Z–A" },
-  { value: "codigo-asc", label: "Código crescente" },
-  { value: "codigo-desc", label: "Código decrescente" },
+  { value: "codigo-asc", label: "Cadastro mais antigo" },
+  { value: "codigo-desc", label: "Cadastro mais recente" },
 ] as const;
 
 export type ProductOrder = (typeof PRODUCT_ORDER_OPTIONS)[number]["value"];

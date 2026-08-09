@@ -27,6 +27,7 @@ describe("persistência do carrinho", () => {
         {
           product: {
             id: 136,
+            codigo: "001-A",
             nome: "Produto de teste",
             id_categoria: 2,
             id_subcategoria: 8,
@@ -46,8 +47,29 @@ describe("persistência do carrinho", () => {
     expect(items).toHaveLength(1);
     expect(items[0]).toMatchObject({
       quantity: 2,
-      product: { id: 136, descricao: null, image_url: null },
+      product: {
+        id: 136,
+        codigo: "001-A",
+        descricao: null,
+        image_url: null,
+      },
     });
+  });
+
+  it("mantém compatibilidade com carrinhos antigos sem código", () => {
+    const items = parseStoredCart(
+      JSON.stringify([
+        {
+          product: {
+            id: 136,
+            nome: "Produto legado",
+          },
+          quantity: 1,
+        },
+      ])
+    );
+
+    expect(items[0]?.product.codigo).toBeNull();
   });
 
   it("descarta conteúdo inválido sem lançar exceção", () => {

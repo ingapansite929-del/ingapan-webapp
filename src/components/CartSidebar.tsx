@@ -4,11 +4,15 @@ import { useCart } from "@/lib/CartContext";
 import { X, Plus, Minus, Trash2, Send } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useRef, useState } from "react";
-import { WHATSAPP_URL } from "@/lib/constants";
 import { useToast } from "@/components/Toast";
 import ProductImage from "@/components/products/ProductImage";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
+import {
+  buildCartQuoteMessage,
+  formatProductReference,
+} from "@/features/products/quote";
+import { WHATSAPP_URL } from "@/lib/constants";
 
 export default function CartSidebar() {
   const { items, isOpen, closeCart, updateQuantity, removeItem, itemCount } = useCart();
@@ -47,15 +51,7 @@ export default function CartSidebar() {
   const handleWhatsAppCheckout = async () => {
     if (items.length === 0 || isSubmittingCheckout) return;
 
-    const messageStart = "Olá! Gostaria de solicitar um orçamento para os seguintes produtos:\n\n";
-    
-    const itemsList = items
-      .map((item) => `- ${item.quantity}x ${item.product.nome} (Cód. #${item.product.id})`)
-      .join("\n");
-      
-    const messageEnd = "\n\nAguardo o retorno com os valores.";
-    
-    const fullMessage = encodeURIComponent(messageStart + itemsList + messageEnd);
+    const fullMessage = encodeURIComponent(buildCartQuoteMessage(items));
     const whatsappUrl = `${WHATSAPP_URL}?text=${fullMessage}`;
 
     setIsSubmittingCheckout(true);
@@ -147,11 +143,14 @@ export default function CartSidebar() {
             </div>
           ) : (
             <div className="space-y-4">
-              {items.map((item) => (
-                <div
-                  key={item.product.id}
-                  className="flex gap-4 rounded-xl border border-gray-100 bg-white p-3 shadow-sm transition-all hover:border-brand-yellow/30 hover:shadow-md"
-                >
+              {items.map((item) => {
+                const reference = formatProductReference(item.product);
+
+                return (
+                  <div
+                    key={item.product.id}
+                    className="flex gap-4 rounded-xl border border-gray-100 bg-white p-3 shadow-sm transition-all hover:border-brand-yellow/30 hover:shadow-md"
+                  >
                   <div className="relative h-20 w-20 flex-shrink-0 overflow-hidden rounded-lg bg-gray-100">
                     <ProductImage
                       src={item.product.image_url}
@@ -167,9 +166,9 @@ export default function CartSidebar() {
                       <h4 className="line-clamp-1 font-semibold text-brand-dark">
                         {item.product.nome}
                       </h4>
-                      <p className="text-xs text-gray-500">
-                        Cód. #{item.product.id}
-                      </p>
+                      {reference ? (
+                        <p className="text-xs text-gray-500">{reference}</p>
+                      ) : null}
                     </div>
                     
                     <div className="flex items-center justify-between">
@@ -206,8 +205,9 @@ export default function CartSidebar() {
                       </button>
                     </div>
                   </div>
-                </div>
-              ))}
+                  </div>
+                );
+              })}
             </div>
           )}
         </div>

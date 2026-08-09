@@ -21,6 +21,7 @@ import {
   getProductSubcategory,
   getSafeImageUrl,
 } from "@/features/products/types";
+import { formatProductReference } from "@/features/products/quote";
 import { getSiteUrl } from "@/lib/seo";
 
 interface ProductDetailPageProps {
@@ -144,6 +145,7 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
   const imageUrl = getSafeImageUrl(product.image_url);
   const siteUrl = getSiteUrl();
   const productUrl = `${siteUrl}/produtos/${product.id}`;
+  const productReference = formatProductReference(product);
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "Product",
@@ -155,7 +157,7 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
       "@type": "Brand",
       name: "Ingapan",
     },
-    sku: String(product.id),
+    ...(product.codigo ? { sku: product.codigo } : {}),
     category: category?.category,
   };
   const breadcrumbJsonLd = {
@@ -242,9 +244,11 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
                       {subcategory.subcategoria}
                     </span>
                   ) : null}
-                  <span className="inline-flex rounded-full border border-brand-dark/15 px-3 py-1 text-xs font-bold uppercase tracking-wide text-brand-dark/70">
-                    Cód. #{product.id}
-                  </span>
+                  {productReference ? (
+                    <span className="inline-flex rounded-full border border-brand-dark/15 px-3 py-1 text-xs font-bold uppercase tracking-wide text-brand-dark/70">
+                      {productReference}
+                    </span>
+                  ) : null}
                 </div>
 
                 <h1 className="mt-4 font-[var(--font-heading)] text-3xl font-bold leading-tight text-brand-dark md:text-4xl">
