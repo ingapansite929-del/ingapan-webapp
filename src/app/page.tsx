@@ -127,28 +127,32 @@ export default async function Home() {
     getInitialUser(),
   ]);
 
-  const jsonLd = [
-    {
-      "@context": "https://schema.org",
-      "@type": "Organization",
-      name: "Ingapan",
-      url: siteUrl,
-      logo: `${siteUrl}/images/LOGO.png`,
-    },
-    {
-      "@context": "https://schema.org",
-      "@type": "WebSite",
-      name: "Ingapan",
-      url: siteUrl,
-      inLanguage: "pt-BR",
-    },
-  ];
+  const organizationJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    name: "Ingapan",
+    url: siteUrl,
+    logo: `${siteUrl}/images/LOGO.png`,
+  };
+  const websiteJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    name: "Ingapan",
+    url: siteUrl,
+    inLanguage: "pt-BR",
+  };
 
   return (
     <>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(organizationJsonLd),
+        }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd) }}
       />
       <Header initialUser={initialUser} />
       <main id="conteudo-principal">

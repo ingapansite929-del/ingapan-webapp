@@ -7,16 +7,16 @@ import {
   productFormSchema,
   updateProductFormSchema,
 } from "@/features/products/admin-schema";
+import {
+  FEATURED_SELECTOR_PAGE_SIZE,
+  featuredSelectorInputSchema,
+  normalizeFeaturedSelectableProducts,
+  type FeaturedSelectorInput,
+} from "@/features/products/featured-selector";
 
 const ADMIN_PRODUCTS_PATH = "/admin/products";
 const HOME_PATH = "/";
 const MAX_FEATURED_PRODUCTS = 10;
-const FEATURED_SELECTOR_PAGE_SIZE = 15;
-
-export type FeaturedSelectableProduct = {
-  id: number;
-  nome: string;
-};
 
 function normalizeText(value: FormDataEntryValue | null): string {
   return typeof value === "string" ? value.trim() : "";
@@ -51,14 +51,6 @@ function parseDisplayOrder(value: FormDataEntryValue | null): number | null {
   }
 
   return parsed;
-}
-
-function sanitizePositiveIntList(values: number[]): number[] {
-  const ids = values
-    .map((value) => Number(value))
-    .filter((value) => Number.isInteger(value) && value > 0);
-
-  return [...new Set(ids)];
 }
 
 function parseFeaturedOrderIds(value: FormDataEntryValue | null): number[] | null {
@@ -123,29 +115,34 @@ export async function createProductAction(formData: FormData) {
   return { success: true, message: "Produto criado com sucesso!" };
 }
 
-export async function listFeaturedSelectableProductsAction(input: {
-  page: number;
-  search?: string;
-  excludedProductIds?: number[];
-}) {
+export async function listFeaturedSelectableProductsAction(
+  input: FeaturedSelectorInput
+) {
   const { supabase } = await requireAdminAccess({
     forbiddenRedirectPath:
       "/admin/products?error=" +
       encodeURIComponent("Acesso negado ao painel admin."),
   });
 
-  const page = Number.isInteger(input.page) && input.page > 0 ? input.page : 1;
-  const search = (input.search ?? "").trim();
-
-  if (search.length > 120) {
-    return { success: false, message: "Busca deve ter no máximo 120 caracteres." };
+  const parsed = featuredSelectorInputSchema.safeParse(input);
+  if (!parsed.success) {
+    return {
+      success: false,
+      message: "Os filtros informados para a busca são inválidos.",
+    };
   }
 
-  const excludedIds = sanitizePositiveIntList(input.excludedProductIds ?? []);
+  const {
+    page,
+    search,
+    categoryId,
+    subcategoryId,
+    excludedProductIds,
+  } = parsed.data;
 
   let query = supabase
     .from("products")
-    .select("id, nome")
+    .select("id, nome, image_url")
     .order("nome", { ascending: true })
     .order("id", { ascending: true });
 
@@ -153,8 +150,20 @@ export async function listFeaturedSelectableProductsAction(input: {
     query = query.ilike("nome", `%${search}%`);
   }
 
-  if (excludedIds.length > 0) {
-    query = query.not("id", "in", `(${excludedIds.join(",")})`);
+  if (categoryId) {
+    query = query.eq("id_categoria", categoryId);
+  }
+
+  if (subcategoryId) {
+    query = query.eq("id_subcategoria", subcategoryId);
+  }
+
+  if (excludedProductIds.length > 0) {
+    query = query.not(
+      "id",
+      "in",
+      `(${excludedProductIds.join(",")})`
+    );
   }
 
   const from = (page - 1) * FEATURED_SELECTOR_PAGE_SIZE;
@@ -165,14 +174,16 @@ export async function listFeaturedSelectableProductsAction(input: {
     return { success: false, message: "Não foi possível carregar os produtos para destaque." };
   }
 
-  const rows = (data ?? []) as FeaturedSelectableProduct[];
+  const rows = data ?? [];
   const hasNextPage = rows.length > FEATURED_SELECTOR_PAGE_SIZE;
+  const visibleRows = hasNextPage
+    ? rows.slice(0, FEATURED_SELECTOR_PAGE_SIZE)
+    : rows;
 
   return {
     success: true,
-    products: hasNextPage ? rows.slice(0, FEATURED_SELECTOR_PAGE_SIZE) : rows,
+    products: normalizeFeaturedSelectableProducts(visibleRows),
     page,
-    hasPreviousPage: page > 1,
     hasNextPage,
   };
 }

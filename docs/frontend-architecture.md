@@ -57,3 +57,17 @@ específico. A sidebar pode ser recolhida durante a navegação, mas o estado n�
 persistido após recarregar. URLs antigas com `tab` em `/admin/clientes` são
 normalizadas para a rota correspondente.
 
+O layout `/admin` também monta um `QueryClientProvider` exclusivo do ambiente
+administrativo. O provider não envolve a loja pública e atende interações que
+precisam de cache cliente incremental, sem substituir as leituras iniciais dos
+Server Components.
+
+Na inclusão de produtos em destaque, `useInfiniteQuery` chama uma Server Action
+protegida por `requireAdminAccess`. Cada chamada recebe busca, filtros, IDs já
+destacados e página; o servidor valida a entrada com Zod, consulta 16 registros,
+normaliza os dados e devolve 15 itens mais `hasNextPage`. A chave da consulta
+inclui todos esses filtros, reiniciando naturalmente na primeira página quando
+um deles muda. O carregamento seguinte depende de intenção real de rolagem
+dentro do contêiner e usa bloqueio single-flight; eventos gerados pela montagem,
+restauração do navegador ou expansão do conteúdo nunca encadeiam páginas
+automaticamente. Nenhum endpoint público é criado para esse fluxo.

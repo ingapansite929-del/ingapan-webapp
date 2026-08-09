@@ -33,6 +33,17 @@
 
 - no mobile, busca permanece visível e opções avançadas ficam em Sheet.
 
+No seletor administrativo de novos destaques, busca e botão de filtro ficam na
+mesma linha. Categoria e subcategoria são rascunhos dentro de um Popover e só
+alteram a consulta após “Aplicar”. Os resultados usam cards compactos, sem
+badges, em uma lista interna que ocupa a altura disponível do card. A próxima
+página de 15 itens exige intenção explícita de rolagem por mouse, toque ou
+teclado e só é solicitada ao chegar a `120px` do fim; eventos de montagem e
+restauração de scroll são ignorados, e um bloqueio síncrono impede chamadas
+duplicadas. O botão `+` inclui diretamente o produto, mostra spinner somente no
+card acionado, desabilita as demais inclusões e remove o item do cache antes de
+atualizar a ordem exibida.
+
 ## Estados
 
 - loading: skeleton proporcional ao conteúdo final, evitando layout shift;
