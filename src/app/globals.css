@@ -159,6 +159,10 @@
   }
 }
 
+body[data-scroll-locked] .scroll-lock-fixed {
+  right: var(--removed-body-scroll-bar-size, 0px);
+}
+
 @keyframes bounce-slow {
   0%,
   100% {
