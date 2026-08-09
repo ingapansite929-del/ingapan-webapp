@@ -31,6 +31,7 @@ function relationSchema<T extends z.ZodType>(schema: T) {
 
 export const productRowSchema = z.object({
   id: z.coerce.number().int().positive(),
+  codigo: nullableTextSchema,
   nome: z.string().trim().min(1),
   id_categoria: z.coerce.number().int().positive().nullable().optional(),
   id_subcategoria: z.coerce.number().int().positive().nullable().optional(),
@@ -49,6 +50,7 @@ export type ProductSubcategoryRelation = z.infer<
 
 export interface ProductRecord {
   id: number;
+  codigo: string | null;
   nome: string;
   id_categoria: number | null;
   id_subcategoria: number | null;
@@ -66,6 +68,7 @@ export function parseProductRecord(value: unknown): ProductRecord | null {
 
   return {
     id: parsed.data.id,
+    codigo: parsed.data.codigo,
     nome: parsed.data.nome,
     id_categoria: parsed.data.id_categoria ?? null,
     id_subcategoria: parsed.data.id_subcategoria ?? null,

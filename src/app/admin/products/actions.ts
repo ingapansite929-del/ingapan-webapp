@@ -97,6 +97,7 @@ export async function createProductAction(formData: FormData) {
   }
 
   const { error: insertError } = await supabase.from("products").insert({
+    codigo: parsed.data.codigo,
     nome: parsed.data.nome,
     id_categoria: parsed.data.id_categoria,
     id_subcategoria: parsed.data.id_subcategoria,
@@ -105,6 +106,16 @@ export async function createProductAction(formData: FormData) {
   });
 
   if (insertError) {
+    if (insertError.code === "23505") {
+      return {
+        success: false,
+        message: "Este código interno já está em uso.",
+        fieldErrors: {
+          codigo: ["Este código interno já está em uso."],
+        },
+      };
+    }
+
     return {
       success: false,
       message: "Não foi possível criar o produto.",
@@ -209,6 +220,7 @@ export async function updateProductAction(formData: FormData) {
   const { error: updateError } = await supabase
     .from("products")
     .update({
+      codigo: parsed.data.codigo,
       nome: parsed.data.nome,
       id_categoria: parsed.data.id_categoria,
       id_subcategoria: parsed.data.id_subcategoria,
@@ -218,6 +230,16 @@ export async function updateProductAction(formData: FormData) {
     .eq("id", parsed.data.id);
 
   if (updateError) {
+    if (updateError.code === "23505") {
+      return {
+        success: false,
+        message: "Este código interno já está em uso.",
+        fieldErrors: {
+          codigo: ["Este código interno já está em uso."],
+        },
+      };
+    }
+
     return {
       success: false,
       message: "Não foi possível atualizar o produto.",

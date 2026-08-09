@@ -7,7 +7,7 @@ import {
 } from "@/features/products/types";
 
 export const PRODUCT_SELECT =
-  "id, nome, id_categoria, id_subcategoria, descricao, image_url, product_categoria(id, category), product_subcategory(id, subcategoria)";
+  "id, codigo, nome, id_categoria, id_subcategoria, descricao, image_url, product_categoria(id, category), product_subcategory(id, subcategoria)";
 
 export function parseProductId(rawId: string): number | null {
   const productId = Number(rawId);
