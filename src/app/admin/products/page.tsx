@@ -1,9 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import {
-  CreateFeaturedProductForm,
-  FeaturedProductsReorderForm,
-} from "@/components/admin/ProductForms";
+import FeaturedProductSelector from "@/components/admin/FeaturedProductSelector";
+import { FeaturedProductsReorderForm } from "@/components/admin/ProductForms";
 import AdminProductsWorkspace from "@/components/admin/AdminProductsWorkspace";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
@@ -155,14 +153,30 @@ export default async function AdminProductsPage({
     );
   }
 
-  const { data: featuredData, error: featuredError } = await supabase
-    .from("products_featured")
-    .select("id, product_id, display_order")
-    .order("display_order", { ascending: true })
-    .order("id", { ascending: true });
+  const [featuredResult, categoriesResult, subcategoriesResult] =
+    await Promise.all([
+      supabase
+        .from("products_featured")
+        .select("id, product_id, display_order")
+        .order("display_order", { ascending: true })
+        .order("id", { ascending: true }),
+      supabase
+        .from("product_categoria")
+        .select("id, category")
+        .order("category"),
+      supabase
+        .from("product_subcategory")
+        .select("id, subcategoria")
+        .order("subcategoria"),
+    ]);
 
-  if (featuredError) throw new Error(featuredError.message);
-  const featuredProducts = (featuredData ?? []) as FeaturedProduct[];
+  if (featuredResult.error) throw new Error(featuredResult.error.message);
+  if (categoriesResult.error) throw new Error(categoriesResult.error.message);
+  if (subcategoriesResult.error) {
+    throw new Error(subcategoriesResult.error.message);
+  }
+
+  const featuredProducts = (featuredResult.data ?? []) as FeaturedProduct[];
   const featuredProductIds = featuredProducts.map((item) => item.product_id);
   let featuredCatalog: ProductRecord[] = [];
 
@@ -212,13 +226,24 @@ export default async function AdminProductsPage({
       </div>
 
       <div className="grid items-start gap-6 xl:grid-cols-[360px_minmax(0,1fr)]">
-        <Card>
-          <CardHeader>
+        <Card
+          style={{ height: "calc(100dvh - 7rem)", overflow: "hidden" }}
+          className="min-h-[32rem] gap-1"
+        >
+          <CardHeader className="shrink-0">
             <CardTitle>Novo destaque</CardTitle>
           </CardHeader>
-          <CardContent>
-            <CreateFeaturedProductForm
+          <CardContent className="flex min-h-0 flex-1 overflow-hidden">
+            <FeaturedProductSelector
               featuredProductIds={featuredProductIds}
+              categories={
+                (categoriesResult.data as ProductCategoryOption[] | null) ?? []
+              }
+              subcategories={
+                (subcategoriesResult.data as
+                  | ProductSubcategoryOption[]
+                  | null) ?? []
+              }
             />
           </CardContent>
         </Card>

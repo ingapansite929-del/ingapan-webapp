@@ -1,5 +1,24 @@
-import { describe, expect, it } from "vitest";
-import { getCartFlightMotion, parseStoredCart } from "@/lib/CartContext";
+import { render, screen, waitFor } from "@testing-library/react";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import {
+  CartProvider,
+  getCartFlightMotion,
+  parseStoredCart,
+  useCart,
+} from "@/lib/CartContext";
+
+vi.mock("@/components/Toast", () => ({
+  useToast: () => ({ addToast: vi.fn() }),
+}));
+
+function CartCount() {
+  const { itemCount } = useCart();
+  return <span data-testid="cart-count">{itemCount}</span>;
+}
+
+beforeEach(() => {
+  localStorage.clear();
+});
 
 describe("persistência do carrinho", () => {
   it("normaliza um carrinho válido salvo no navegador", () => {
@@ -34,6 +53,38 @@ describe("persistência do carrinho", () => {
   it("descarta conteúdo inválido sem lançar exceção", () => {
     expect(parseStoredCart("{inválido")).toEqual([]);
     expect(parseStoredCart(JSON.stringify([{ quantity: 1 }]))).toEqual([]);
+  });
+
+  it("mantém o primeiro render vazio e restaura o localStorage após a montagem", async () => {
+    localStorage.setItem(
+      "cart-storage",
+      JSON.stringify([
+        {
+          product: {
+            id: 136,
+            nome: "Produto salvo",
+            id_categoria: null,
+            id_subcategoria: null,
+            descricao: null,
+            image_url: null,
+            product_categoria: null,
+            product_subcategory: null,
+          },
+          quantity: 2,
+        },
+      ])
+    );
+
+    render(
+      <CartProvider>
+        <CartCount />
+      </CartProvider>
+    );
+
+    expect(screen.getByTestId("cart-count")).toHaveTextContent("0");
+    await waitFor(() =>
+      expect(screen.getByTestId("cart-count")).toHaveTextContent("2")
+    );
   });
 });
 
